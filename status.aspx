@@ -12,14 +12,7 @@ private string getHostname()
 }
 private string getLandingPageUrl()
 {
-  if (isTraefikUsed())
-    return getHostname() + ":8180";
-  else
-    return getHostname();
-}
-private bool isTraefikUsed()
-{
-  return System.IO.File.Exists(@"c:\programdata\bccontainerhelper\traefikforbc\traefik.txt");
+  return getHostname();
 }
 </script>
 <%

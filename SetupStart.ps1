@@ -1,5 +1,5 @@
 ﻿function AddToStatus([string]$line, [string]$color = "Gray") {
-    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
+    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
 }
 
 function Download-File([string]$sourceUrl, [string]$destinationFile)
@@ -38,35 +38,15 @@ AddToStatus "SetupStart, User: $env:USERNAME"
 
 $ComputerInfo = Get-ComputerInfo
 $WindowsInstallationType = $ComputerInfo.WindowsInstallationType
-$WindowsProductName = $ComputerInfo.WindowsProductName
 
-if ($nchBranch -eq "preview") {
-    AddToStatus "Installing Latest BcContainerHelper preview from PowerShell Gallery"
-    Install-Module -Name bccontainerhelper -Force -AllowPrerelease
-    Import-Module -Name bccontainerhelper -DisableNameChecking
-    AddToStatus ("Using BcContainerHelper version "+(get-module BcContainerHelper).Version.ToString())
-}
-elseif ($nchBranch -eq "") {
-    AddToStatus "Installing Latest Business Central Container Helper from PowerShell Gallery"
-    Install-Module -Name bccontainerhelper -Force
-    Import-Module -Name bccontainerhelper -DisableNameChecking
-    AddToStatus ("Using BcContainerHelper version "+(get-module BcContainerHelper).Version.ToString())
-} else {
-    if ($nchBranch -notlike "https://*") {
-        $nchBranch = "https://github.com/Microsoft/navcontainerhelper/archive/$($nchBranch).zip"
-    }
-    AddToStatus "Using BcContainerHelper from $nchBranch"
-    Download-File -sourceUrl $nchBranch -destinationFile "c:\demo\bccontainerhelper.zip"
-    [Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.Filesystem") | Out-Null
-    [System.IO.Compression.ZipFile]::ExtractToDirectory("c:\demo\bccontainerhelper.zip", "c:\demo")
-    $module = Get-Item -Path "C:\demo\*\BcContainerHelper.psm1"
-    AddToStatus "Loading BcContainerHelper from $($module.FullName)"
-    Import-Module $module.FullName -DisableNameChecking
+if (-not (Get-InstalledModule Az.Storage -ErrorAction SilentlyContinue)) {
+    AddToStatus "Installing Az.Storage module"
+    Install-Module Az.Storage -Force
 }
 
-if (-not (Get-InstalledModule Az -ErrorAction SilentlyContinue)) {
-    AddToStatus "Installing Az module"
-    Install-Module Az -Force
+if (-not (Get-InstalledModule Az.Account -ErrorAction SilentlyContinue)) {
+    AddToStatus "Installing Az.Account module"
+    Install-Module Az.Account -Force
 }
 
 if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
@@ -81,55 +61,6 @@ if (-not (Get-InstalledModule SqlServer -ErrorAction SilentlyContinue)) {
 
 $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
 $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword))
-
-if ($requestToken) {
-    if (!(Get-ScheduledTask -TaskName request -ErrorAction Ignore)) {
-        AddToStatus "Registering request task"
-        $xml = [System.IO.File]::ReadAllText("c:\demo\RequestTaskDef.xml")
-        Register-ScheduledTask -TaskName request -User $vmadminUsername -Password $plainPassword -Xml $xml
-    }
-}
-
-if ("$createStorageQueue" -eq "yes") {
-    if (-not (Get-InstalledModule AzTable -ErrorAction SilentlyContinue)) {
-        AddToStatus "Installing AzTable Module"
-        Install-Module AzTable -Force
-    
-        $taskName = "RunQueue"
-        $startupAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy UnRestricted -File c:\demo\RunQueue.ps1"
-        $startupTrigger = New-ScheduledTaskTrigger -AtStartup
-        $startupTrigger.Delay = "PT5M"
-        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable -DontStopOnIdleEnd
-        $task = Register-ScheduledTask -TaskName $taskName `
-                               -Action $startupAction `
-                               -Trigger $startupTrigger `
-                               -Settings $settings `
-                               -RunLevel Highest `
-                               -User $vmAdminUsername `
-                               -Password $plainPassword
-        
-        $task.Triggers.Repetition.Interval = "PT5M"
-        $task | Set-ScheduledTask -User $vmAdminUsername -Password $plainPassword | Out-Null
-    
-        Start-ScheduledTask -TaskName $taskName
-    }
-}
-
-$taskName = "RestartContainers"
-if (-not (Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)) {
-    AddToStatus "Register RestartContainers Task to start container delayed"
-    $startupAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy UnRestricted -file c:\demo\restartcontainers.ps1"
-    $startupTrigger = New-ScheduledTaskTrigger -AtStartup
-    $startupTrigger.Delay = "PT5M"
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable -DontStopOnIdleEnd
-    $task = Register-ScheduledTask -TaskName $taskName `
-                           -Action $startupAction `
-                           -Trigger $startupTrigger `
-                           -Settings $settings `
-                           -RunLevel Highest `
-                           -User $vmadminUsername `
-                           -Password $plainPassword
-}
 
 if ($WindowsInstallationType -eq "Server") {
 
@@ -166,7 +97,5 @@ else {
                            -Password $plainPassword | Out-Null
     
     AddToStatus -color Yellow "Restarting computer. After restart, please Login to computer using RDP in order to resume the installation process. This is not needed for Windows Server."
-    
-    Shutdown -r -t 60
-
+    shutdown -r -t 60
 }

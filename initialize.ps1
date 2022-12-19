@@ -1,60 +1,30 @@
 # usage initialize.ps1
 param
 (
-       [string] $templateLink              = "https://raw.githubusercontent.com/Microsoft/nav-arm-templates/master/navdeveloperpreview.json",
+       [string] $templateLink              = "https://raw.githubusercontent.com/ricardopaiva/nav-arm-templates/master/navdeveloperpreview.json",
        [string] $containerName             = "navserver",
        [string] $hostName                  = "",
-       [string] $storageConnectionString   = "",
-       [string] $isolation                 = "Default",
        [string] $vmAdminUsername           = "vmadmin",
        [string] $navAdminUsername          = "admin",
        [string] $azureSqlAdminUsername     = "sqladmin",
        [string] $adminPassword             = "P@ssword1",
-       [string] $artifactUrl               = "",
-       [string] $navDockerImage            = "",
-       [string] $registryUsername          = "",
-       [string] $registryPassword          = "",
-       [string] $sqlServerType             = "SQLExpress",
        [string] $azureSqlServer            = "",
-       [string] $appBacpacUri              = "",
-       [string] $tenantBacpacUri           = "",
-       [string] $databaseBakUri            = "",
-       [string] $includeAppUris            = "",
-       [string] $enableSymbolLoading       = "No",
-       [string] $includeCSIDE              = "No",
-       [string] $includeAL                 = "No",
        [string] $clickonce                 = "No",
-       [string] $enableTaskScheduler       = "Default",
        [string] $licenseFileUri            = "",
-       [string] $certificatePfxUrl         = "",
-       [string] $certificatePfxPassword    = "",
        [string] $publicDnsName             = "",
-	   [string] $fobFileUrl                = "",
-	   [string] $workshopFilesUrl          = "",
 	   [string] $beforeContainerSetupScriptUrl = "",
-	   [string] $finalSetupScriptUrl       = "",
        [string] $style                     = "devpreview",
-       [string] $TestToolkit               = "No",
-       [string] $AssignPremiumPlan         = "No",
-       [string] $CreateTestUsers           = "No",
-       [string] $CreateAadUsers            = "No",
        [string] $RunWindowsUpdate          = "No",
        [string] $Multitenant               = "No",
-       [string] $ContactEMailForLetsEncrypt= "",
        [string] $RemoteDesktopAccess       = "*",
-       [string] $WinRmAccess               = "-",
-       [string] $BingMapsKey               = "",
-       [string] $Office365UserName         = "",
-       [string] $Office365Password         = "",
-       [string] $Office365CreatePortal     = "No",
-       [string] $requestToken              = "",
-       [string] $createStorageQueue        = "",
-       [string] $AddTraefik                = "No",
-       [string] $nchBranch                 = "",
-       [string] $organization              = "",
-       [string] $token                     = "",
-       [string] $pool                      = "",
-       [string] $agentUrl                  = ""
+       [string] $BCLocalization            = "W1",
+       [string] $HCCProjectDirectory       = "",
+       [string] $HCSWebServicesURL         = "",
+       [string] $HCSWebServicesUsername    = "",
+       [string] $HCSWebServicesPassword    = "",
+       [string] $StorageAccountName        = "",
+       [string] $StorageContainerName      = "",
+       [string] $StorageSasToken           = ""
 )
 
 $verbosePreference = "SilentlyContinue"
@@ -71,7 +41,7 @@ function Get-VariableDeclaration([string]$name) {
 }
 
 function AddToStatus([string]$line, [string]$color = "Gray") {
-    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
+    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
 }
 
 function Download-File([string]$sourceUrl, [string]$destinationFile)
@@ -84,15 +54,6 @@ function Download-File([string]$sourceUrl, [string]$destinationFile)
 
 if ($publicDnsName -eq "") {
     $publicDnsName = $hostname
-}
-
-$artifactUrl = $artifactUrl.Trim()
-$navDockerImage = $navDockerImage.Trim()
-
-if ($artifactUrl -ne "" -and $navDockerImage -ne "") {
-    # Both artifact Url AND navDockerImage specified, navDockerImage wins
-    # Reason: ArtifactUrl is defaulted, navDockerImage is not - hence user must have specified a navDockerImage
-    $artifactUrl = ""
 }
 
 $ComputerInfo = Get-ComputerInfo
@@ -110,49 +71,28 @@ if (Test-Path $settingsScript) {
     
     Get-VariableDeclaration -name "templateLink"           | Set-Content $settingsScript
     Get-VariableDeclaration -name "hostName"               | Add-Content $settingsScript
-    Get-VariableDeclaration -name "StorageConnectionString"| Add-Content $settingsScript
     Get-VariableDeclaration -name "containerName"          | Add-Content $settingsScript
-    Get-VariableDeclaration -name "isolation"              | Add-Content $settingsScript
     Get-VariableDeclaration -name "vmAdminUsername"        | Add-Content $settingsScript
     Get-VariableDeclaration -name "navAdminUsername"       | Add-Content $settingsScript
     Get-VariableDeclaration -name "azureSqlAdminUsername"  | Add-Content $settingsScript
-    Get-VariableDeclaration -name "Office365Username"      | Add-Content $settingsScript
-    Get-VariableDeclaration -name "Office365CreatePortal"  | Add-Content $settingsScript
-    Get-VariableDeclaration -name "artifactUrl"            | Add-Content $settingsScript
-    Get-VariableDeclaration -name "navDockerImage"         | Add-Content $settingsScript
-    Get-VariableDeclaration -name "registryUsername"       | Add-Content $settingsScript
-    Get-VariableDeclaration -name "registryPassword"       | Add-Content $settingsScript
-    Get-VariableDeclaration -name "sqlServerType"          | Add-Content $settingsScript
     Get-VariableDeclaration -name "azureSqlServer"         | Add-Content $settingsScript
-    Get-VariableDeclaration -name "appBacpacUri"           | Add-Content $settingsScript
-    Get-VariableDeclaration -name "tenantBacpacUri"        | Add-Content $settingsScript
-    Get-VariableDeclaration -name "databaseBakUri"         | Add-Content $settingsScript
-    Get-VariableDeclaration -name "includeAppUris"         | Add-Content $settingsScript
-    Get-VariableDeclaration -name "enableSymbolLoading"    | Add-Content $settingsScript
-    Get-VariableDeclaration -name "includeCSIDE"           | Add-Content $settingsScript
-    Get-VariableDeclaration -name "includeAL"              | Add-Content $settingsScript
     Get-VariableDeclaration -name "clickonce"              | Add-Content $settingsScript
-    Get-VariableDeclaration -name "enableTaskScheduler"    | Add-Content $settingsScript
     Get-VariableDeclaration -name "licenseFileUri"         | Add-Content $settingsScript
     Get-VariableDeclaration -name "publicDnsName"          | Add-Content $settingsScript
-    Get-VariableDeclaration -name "workshopFilesUrl"       | Add-Content $settingsScript
     Get-VariableDeclaration -name "style"                  | Add-Content $settingsScript
     Get-VariableDeclaration -name "RunWindowsUpdate"       | Add-Content $settingsScript
-    Get-VariableDeclaration -name "TestToolkit"            | Add-Content $settingsScript
-    Get-VariableDeclaration -name "AssignPremiumPlan"      | Add-Content $settingsScript
-    Get-VariableDeclaration -name "CreateTestUsers"        | Add-Content $settingsScript
-    Get-VariableDeclaration -name "CreateAadUsers"         | Add-Content $settingsScript
     Get-VariableDeclaration -name "Multitenant"            | Add-Content $settingsScript
     Get-VariableDeclaration -name "WindowsInstallationType"| Add-Content $settingsScript
     Get-VariableDeclaration -name "WindowsProductName"     | Add-Content $settingsScript
-    Get-VariableDeclaration -name "ContactEMailForLetsEncrypt" | Add-Content $settingsScript
     Get-VariableDeclaration -name "RemoteDesktopAccess"    | Add-Content $settingsScript
-    Get-VariableDeclaration -name "WinRmAccess"            | Add-Content $settingsScript
-    Get-VariableDeclaration -name "BingMapsKey"            | Add-Content $settingsScript
-    Get-VariableDeclaration -name "RequestToken"           | Add-Content $settingsScript
-    Get-VariableDeclaration -name "CreateStorageQueue"     | Add-Content $settingsScript
-    Get-VariableDeclaration -name "AddTraefik"             | Add-Content $settingsScript
-    Get-VariableDeclaration -name "nchBranch"              | Add-Content $settingsScript
+    Get-VariableDeclaration -name "HCCProjectDirectory"    | Add-Content $settingsScript
+    Get-VariableDeclaration -name "HCSWebServicesURL"      | Add-Content $settingsScript
+    Get-VariableDeclaration -name "HCSWebServicesUsername" | Add-Content $settingsScript
+    Get-VariableDeclaration -name "HCSWebServicesPassword" | Add-Content $settingsScript
+    Get-VariableDeclaration -name "BCLocalization"         | Add-Content $settingsScript
+    Get-VariableDeclaration -name "StorageAccountName"     | Add-Content $settingsScript
+    Get-VariableDeclaration -name "StorageContainerName"   | Add-Content $settingsScript
+    Get-VariableDeclaration -name "StorageSasToken"        | Add-Content $settingsScript
 
     $passwordKey = New-Object Byte[] 16
     [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($passwordKey)
@@ -187,7 +127,6 @@ if (Test-Path -Path "c:\DEMO\Status.txt" -PathType Leaf) {
 }
 
 Set-Content "c:\DEMO\RemoteDesktopAccess.txt" -Value $RemoteDesktopAccess
-Set-Content "c:\DEMO\WinRmAccess.txt" -Value $WinRmAccess
 
 Set-ExecutionPolicy -ExecutionPolicy unrestricted -Force
 
@@ -212,9 +151,9 @@ if (!(Get-Module powershellget | Where-Object { $_.Version -ge [version]"2.2.5" 
 
 AddToStatus "Installing Internet Information Server (this might take a few minutes)"
 if ($WindowsInstallationType -eq "Server") {
-    Add-WindowsFeature Web-Server,web-Asp-Net45
+    Add-WindowsFeature Web-Server,web-Asp-Net45,NET-HTTP-Activation,Web-Mgmt-Console,Web-Dyn-Compression,Web-Basic-Auth
 } else {
-    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServer,IIS-ASPNET45 -All -NoRestart | Out-Null
+    Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServer,IIS-ASPNET45,WCF-HTTP-Activation,IIS-ManagementConsole,IIS-BasicAuthentication,IIS-HttpCompressionDynamic -All -NoRestart | Out-Null
 }
 
 Remove-Item -Path "C:\inetpub\wwwroot\iisstart.*" -Force
@@ -223,9 +162,6 @@ Download-File -sourceUrl "$($scriptPath)status.aspx"             -destinationFil
 Download-File -sourceUrl "$($scriptPath)line.png"                -destinationFile "C:\inetpub\wwwroot\line.png"
 Download-File -sourceUrl "$($scriptPath)Microsoft.png"           -destinationFile "C:\inetpub\wwwroot\Microsoft.png"
 Download-File -sourceUrl "$($scriptPath)web.config"              -destinationFile "C:\inetpub\wwwroot\web.config"
-if ($requestToken) {
-    Download-File -sourceUrl "$($scriptPath)request.aspx"            -destinationFile "C:\inetpub\wwwroot\request.aspx"
-}
 
 $title = 'Dynamics Container Host'
 [System.IO.File]::WriteAllText("C:\inetpub\wwwroot\title.txt", $title)
@@ -245,11 +181,13 @@ if ($WindowsInstallationType -eq "Server") {
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}" -Name "IsInstalled" -Value 0 -ErrorAction SilentlyContinue | Out-Null
 }
 
-$setupDesktopScript = "c:\demo\SetupDesktop.ps1"
 $setupStartScript = "c:\demo\SetupStart.ps1"
 $setupVmScript = "c:\demo\SetupVm.ps1"
-$setupNavContainerScript = "c:\demo\SetupNavContainer.ps1"
-$setupAadScript = "c:\demo\SetupAAD.ps1"
+$setupPrerequirements = "c:\demo\SetupPrerequirements.ps1"
+$setupHybridCloudServer = "c:\demo\SetupHybridCloudServer.ps1"
+$setupHybridCloudServerFinal = "c:\demo\SetupHybridCloudServerFinal.ps1"
+$setupDataDirectorConfig = "c:\demo\SetupDataDirectorConfig.ps1"
+$setupSSMS = "c:\demo\SetupSSMS.ps1"
 
 if ($vmAdminUsername -ne $navAdminUsername) {
     '. "c:\run\SetupWindowsUsers.ps1"
@@ -264,120 +202,20 @@ Add-LocalGroupMember -Group administrators -Member $hostUsername -ErrorAction Ig
 ' | Set-Content "c:\myfolder\SetupWindowsUsers.ps1"
 }
 
-Download-File -sourceUrl "$($scriptPath)SetupWebClient.ps1"    -destinationFile "c:\myfolder\SetupWebClient.ps1"
-
-Download-File -sourceUrl "$($scriptPath)SetupDesktop.ps1"      -destinationFile $setupDesktopScript
-Download-File -sourceUrl "$($scriptPath)SetupNavContainer.ps1" -destinationFile $setupNavContainerScript
 Download-File -sourceUrl "$($scriptPath)SetupVm.ps1"           -destinationFile $setupVmScript
 Download-File -sourceUrl "$($scriptPath)SetupStart.ps1"        -destinationFile $setupStartScript
-Download-File -sourceUrl "$($scriptPath)RestartContainers.ps1" -destinationFile "c:\demo\restartContainers.ps1"
-if ($requestToken) {
-    Download-File -sourceUrl "$($scriptPath)Request.ps1"           -destinationFile "C:\DEMO\Request.ps1"
-    Download-File -sourceUrl "$($scriptPath)RequestTaskDef.xml"    -destinationFile "C:\DEMO\RequestTaskDef.xml"
-}
-if ("$createStorageQueue" -eq "yes") {
-    Download-File -sourceUrl "$($scriptPath)RunQueue.ps1"          -destinationFile "C:\DEMO\RunQueue.ps1"
-}
-if ("$requestToken" -ne "" -or "$createStorageQueue" -eq "yes") {
-    # Request commands
-    New-Item -Path "C:\DEMO\request" -ItemType Directory | Out-Null
-    Download-File -sourceUrl "$($scriptPath)request\Demo.ps1"                         -destinationFile "C:\DEMO\request\Demo.ps1"
-    Download-File -sourceUrl "$($scriptPath)request\ReplaceNavServerContainer.ps1"    -destinationFile "C:\DEMO\request\ReplaceNavServerContainer.ps1"
-    Download-File -sourceUrl "$($scriptPath)request\RestartComputer.ps1"              -destinationFile "C:\DEMO\request\RestartComputer.ps1"
-}
-Download-File -sourceUrl "$($scriptPath)Install-VS2017Community.ps1" -destinationFile "C:\DEMO\Install-VS2017Community.ps1"
+Download-File -sourceUrl "$($scriptPath)SetupPrerequirements.ps1" -destinationFile $setupPrerequirements
+Download-File -sourceUrl "$($scriptPath)SetupHybridCloudServer.ps1" -destinationFile $setupHybridCloudServer
+Download-File -sourceUrl "$($scriptPath)SetupHybridCloudServerFinal.ps1" -destinationFile $setupHybridCloudServerFinal
+Download-File -sourceUrl "$($scriptPath)SetupDataDirectorConfig.ps1" -destinationFile $setupDataDirectorConfig
+Download-File -sourceUrl "$($scriptPath)SetupSSMS.ps1" -destinationFile $setupSSMS
 
 if ($beforeContainerSetupScriptUrl) {
-    if ($beforeContainerSetupScriptUrl -notlike "https://*" -and $beforeContainerSetupScriptUrl -notlike "http://*") {
-        $beforeContainerSetupScriptUrl = "$($scriptPath)$beforeContainerSetupScriptUrl"
-    }
+    # if ($beforeContainerSetupScriptUrl -notlike "https://*" -and $beforeContainerSetupScriptUrl -notlike "http://*") {
+        # $beforeContainerSetupScriptUrl = "$($scriptPath)$beforeContainerSetupScriptUrl"
+    # }
     $beforeContainerSetupScript = "c:\demo\BeforeContainerSetupScript.ps1"
     Download-File -sourceUrl $beforeContainerSetupScriptUrl -destinationFile $beforeContainerSetupScript
-}
-
-if ($finalSetupScriptUrl) {
-    if ($finalSetupScriptUrl -notlike "https://*" -and $finalSetupScriptUrl -notlike "http://*") {
-        $finalSetupScriptUrl = "$($scriptPath)$finalSetupScriptUrl"
-    }
-    $finalSetupScript = "c:\demo\FinalSetupScript.ps1"
-    Download-File -sourceUrl $finalSetupScriptUrl -destinationFile $finalSetupScript
-}
-
-if ($fobFileUrl -ne "") {
-    Download-File -sourceUrl $fobFileUrl -destinationFile "c:\demo\objects.fob"
-}
-
-if ($workshopFilesUrl -ne "") {
-    if ($workshopFilesUrl -notlike "https://*" -and $workshopFilesUrl -notlike "http://*") {
-        $workshopFilesUrl = "$($scriptPath)$workshopFilesUrl"
-    }
-    $workshopFilesFolder = "c:\WorkshopFiles"
-    $workshopFilesFile = Join-Path $downloadFolder "WorkshopFiles.zip"
-    New-Item -Path $workshopFilesFolder -ItemType Directory -ErrorAction Ignore | Out-Null
-	Download-File -sourceUrl $workshopFilesUrl -destinationFile $workshopFilesFile
-    AddToStatus "Unpacking Workshop Files to $WorkshopFilesFolder"
-	[Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.Filesystem") | Out-Null
-	[System.IO.Compression.ZipFile]::ExtractToDirectory($workshopFilesFile, $workshopFilesFolder)
-}
-
-if ($certificatePfxUrl -ne "" -and $certificatePfxPassword -ne "") {
-    Download-File -sourceUrl $certificatePfxUrl -destinationFile "c:\myfolder\certificate.pfx"
-
-('$certificatePfxPassword = "'+$certificatePfxPassword+'"
-$certificatePfxFile = Join-Path $PSScriptRoot "certificate.pfx"
-$cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certificatePfxFile, $certificatePfxPassword)
-$certificateThumbprint = $cert.Thumbprint
-Write-Host "Certificate File Thumbprint $certificateThumbprint"
-if (!(Get-Item Cert:\LocalMachine\my\$certificateThumbprint -ErrorAction SilentlyContinue)) {
-    Write-Host "Importing Certificate to LocalMachine\my"
-    Import-PfxCertificate -FilePath $certificatePfxFile -CertStoreLocation cert:\localMachine\my -Password (ConvertTo-SecureString -String $certificatePfxPassword -AsPlainText -Force) | Out-Null
-}
-$dnsidentity = $cert.GetNameInfo("SimpleName",$false)
-if ($dnsidentity.StartsWith("*")) {
-    $dnsidentity = $dnsidentity.Substring($dnsidentity.IndexOf(".")+1)
-}
-Write-Host "DNS identity $dnsidentity"
-') | Set-Content "c:\myfolder\SetupCertificate.ps1"
-
-('Write-Host "DNS identity $dnsidentity"
-') | Set-Content "c:\myfolder\AdditionalSetup.ps1"
-
-$ContactEMailForLetsEncrypt = ""
-Get-VariableDeclaration -name "ContactEMailForLetsEncrypt" | Add-Content $settingsScript
-
-}
-
-if ($AddTraefik -eq "yes" -and [environment]::OSVersion.Version.Build -ne 17763) {
-    # Traefik currently requires hyperv if not 1809
-    AddToStatus "Enable Hyper-V and containers (needed by Traefik)"
-    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V, Containers -All -NoRestart | Out-Null
-}
-
-$installDocker = (!(Test-Path -Path "C:\Program Files\Docker\docker.exe" -PathType Leaf))
-if ($installDocker) {
-    $installDockerScriptUrl = $templateLink.Substring(0,$templateLink.LastIndexOf('/')+1)+'InstallOrUpdateDockerEngine.ps1'
-    $installDockerScript = "C:\DEMO\InstallOrUpdateDockerEngine.ps1"
-    Download-File -sourceUrl $installDockerScriptUrl -destinationFile $installDockerScript
-    . $installDockerScript -Force -envScope "Machine"
-}
-
-if ($organization -ne "" -and $token -ne "" -and $pool -ne "" -and $agentUrl -ne "") {
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    $agentFilename = $agentUrl.Substring($agentUrl.LastIndexOf('/')+1)
-    $agentFullname = Join-Path $DownloadFolder $agentFilename
-    Download-File -sourceUrl $agentUrl -destinationFile $agentFullname
-    $agentName = "$vmName"
-    $agentFolder = "C:\Agent"
-    mkdir $agentFolder -ErrorAction Ignore | Out-Null
-    Set-Location $agentFolder
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($agentFullname, $agentFolder)
-    
-    if ($agentUrl -like 'https://github.com/actions/runner/releases/download/*') {
-        .\config.cmd --unattended --url "$organization" --token "$token" --name $agentName --labels "$pool" --runAsService --windowslogonaccount "NT AUTHORITY\SYSTEM"
-    }
-    else {
-        .\config.cmd --unattended --url "$organization" --auth PAT --token "$token" --pool "$pool" --agent $agentName --runAsService --windowslogonaccount "NT AUTHORITY\SYSTEM"
-    }
 }
 
 $startupAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy UnRestricted -File $setupStartScript"

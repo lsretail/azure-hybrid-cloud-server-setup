@@ -42,19 +42,13 @@ private string createQrImg(string link, string title, int width = 100, int heigh
 
 private string getLandingPageUrl()
 {
-  if (isTraefikUsed())
-    return getHostname() + ":8180";
-  else
-    return getHostname();
+  return getHostname();
 }
 
 private string getConfigureAppUrl()
 {
   var url = "";
-  if (isTraefikUsed())
-    url = "ms-dynamicsnav://"+getHostname()+"/"+getContainerName();
-  else
-    url = "ms-dynamicsnav://"+getHostname()+"/nav";
+  url = "ms-dynamicsnav://"+getHostname()+"/nav";
   if (isMultitenant()) 
     {
       url += "?tenant=default";
@@ -242,10 +236,6 @@ private string getCompanyName()
 
 private string getServerInstance()
 {
-  if (isTraefikUsed())
-  {
-    return getContainerName()+"dev";
-  }
   if (GetCustomSettings())
   {
     return customSettings.SelectSingleNode("//appSettings/add[@key='ServerInstance']").Attributes["value"].Value;
@@ -265,11 +255,6 @@ private string getAzureSQL()
     return "SQL Server<br />"+DatabaseServer+DatabaseInstance+"<br />"+DatabaseName;
   }
   return "";
-}
-
-private bool isTraefikUsed()
-{
-  return System.IO.File.Exists(@"c:\programdata\bccontainerhelper\traefikforbc\traefik.txt");
 }
 
 </script>
@@ -420,7 +405,7 @@ function refresh()
     </tr>
     <tr><td colspan="4"><img src="line.png" width="100%" height="14"></td></tr>
 <%
-    if (GetCustomSettings() && File.Exists(@"c:\programdata\bccontainerhelper\extensions\"+getContainerName()+@"\Certificate.cer") && ! isTraefikUsed()) {
+    if (GetCustomSettings() && File.Exists(@"c:\programdata\bccontainerhelper\extensions\"+getContainerName()+@"\Certificate.cer")) {
 %>
     <tr><td colspan="4"><h3>Download Self Signed Certificate</h3></td></tr>
     <tr>
@@ -557,11 +542,7 @@ You can view the installation status by following this link.
     }
     var vsix = System.IO.Directory.GetFiles(@"c:\programdata\bccontainerhelper\extensions\"+getContainerName(), "*.vsix");
     if (vsix.Length == 1) {
-      var vsixURL = "";
-      if (isTraefikUsed())
-        vsixURL = "https://"  + getHostname() + "/" + getContainerName() + "dl/" + System.IO.Path.GetFileName(vsix[0]);
-      else 
-        vsixURL = "http://" + getLandingPageUrl() + ":8080/" + System.IO.Path.GetFileName(vsix[0]);
+      var vsixURL = "http://" + getLandingPageUrl() + ":8080/" + System.IO.Path.GetFileName(vsix[0]);
 %>    
     <tr><td colspan="4"><h3>Access the <%=getProduct() %> using Visual Studio Code</h3></td></tr>
     <tr>
@@ -574,50 +555,12 @@ You can view the installation status by following this link.
       &nbsp;&nbsp;"serverInstance": "<%=getServerInstance() %>",<br>
       &nbsp;&nbsp;"tenant": "<%=getTenant() %>",<br>
       &nbsp;&nbsp;"authentication": "UserPassword",
-      <% if (isTraefikUsed()) { %>
-        <br>&nbsp;&nbsp;"port": 443,
-      <% } %>
     </td></tr>
 <%
     }
   }
-  if (System.IO.Directory.Exists(@"C:\ProgramData\bcContainerHelper\traefikforbc")) {
-%>
-    <tr><td colspan="4"><h3>Traefik containers</h3></td></tr>
-    <tr><td colspan="4">This VM is setup with Traefik and below are the containers setup for access through Traefik.</td></tr>
-    <tr>
-      <table>
-          <tr><td><b>Name</b></td><td><b>WebClient</b></td><td><b>Soap</b></td><td><b>Rest</b></td><td><b>Developer Endpoint</b></td><td><b>VSIX</b></td></tr>
-<%
-        var directories = System.IO.Directory.GetDirectories(@"C:\ProgramData\bcContainerHelper\Extensions", "*");
-        foreach(var directory in directories) {
-          if (System.IO.Directory.Exists(directory+@"\my")) {
-            var name = System.IO.Path.GetFileName(directory);
-            var hostname = "https://"+getHostname();
-            var webclient = "/"+name;
-            var soap = webclient+"soap";
-            var rest = webclient+"rest";
-            var developer = webclient+"dev";
-            var vsixFile = System.IO.Directory.GetFiles(@"c:\programdata\bccontainerhelper\extensions\"+name, "*.vsix");
-            var vsix = "";
-            if (vsixFile.Length == 1) {
-              vsix = webclient+"dl/"+System.IO.Path.GetFileName(vsixFile[0]);
-            }
-%>
-            <tr><td><%=name %></td><td nowrap><a href="<%=hostname+webclient %>" target="_blank"><%=webclient %></a></td><td nowrap><a href="<%=hostname+soap %>" target="_blank"><%=soap %></a></td><td nowrap><a href="<%=hostname+rest %>" target="_blank"><%=rest %></a></td><td nowrap><a href="<%=hostname+developer %>" target="_blank"><%=developer %></a></td><td nowrap><a href="<%=hostname+vsix %>" target="_blank"><%=vsix %></a></td></tr>
-<%
-          }
-        }
-%>
-      </table>
-    </tr>
-
-
-<%
-  }
 %>
     <tr><td colspan="4">&nbsp;</td></tr>
-
   </table>
 </body>
 </html>
