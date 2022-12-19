@@ -394,7 +394,7 @@ function refresh()
     <table>
     <tr>
     <td rowspan="2" width="110"><% =createQrForLandingPage() %></td>
-    <td style="vertical-align:bottom">&nbsp;<img src="Microsoft.png" width="108" height="23"></td>
+    <td style="vertical-align:bottom">&nbsp;<img src="LSRetail.png" width="108" height="23"></td>
     </tr><tr>
     <td style="vertical-align:top"><h1><%=getProduct() %></h1><%=getBuildNumber() %></td>
     </tr>
