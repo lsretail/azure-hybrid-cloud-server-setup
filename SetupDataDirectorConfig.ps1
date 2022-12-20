@@ -103,8 +103,11 @@ Set-Acl $DDFolder $Acl
 AddToStatus "Adding a new SQL user for DD usage"
 
 # TODO: Add as a parameter (Only for the password but keep the username hardcoded)
-$sqlDDUser = 'DataDirector'
-$sqlDDPassword = 'DV4#fGnZ'
+$sqlDDUser = 'datadirector'
+$sqlDDPassword = 'jrPLY6zAXxgVyG2u'
+
+AddToStatus "Data Director user added with username: '$($sqlDDUser)'."
+AddToStatus "Data Director user added with password: '$($sqlDDPassword)'."
 
 # To create user the sa user
 Invoke-Sqlcmd -ServerInstance "$($env:Computername)\SQLEXPRESS" -Database "master" -Query "CREATE LOGIN [$($sqlDDUser)] WITH PASSWORD=N'$($sqlDDPassword)', CHECK_POLICY=OFF"
