@@ -22,26 +22,32 @@ $ListDDLicenseFileHT = @{
 
 try
 {   
-    Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
+  AddToStatus "Loading the Data Director license - Before Get-AzStorageBlob"
+  Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
+  AddToStatus "Loading the Data Director license - After Get-AzStorageBlob"
 
-    $LicenseFileSourcePath = "c:\demo\license.lic"
-    $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
-    
-    $DownloadDDLicenseFileHT = @{
-      Blob        = $licenseFileName
-      Container   = $StorageContainerName
-      Destination = $LicenseFileSourcePath
-      Context     = $storageAccountContext
+  $LicenseFileSourcePath = "c:\demo\license.lic"
+  $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
+  
+  $DownloadDDLicenseFileHT = @{
+    Blob        = $licenseFileName
+    Container   = $StorageContainerName
+    Destination = $LicenseFileSourcePath
+    Context     = $storageAccountContext
   }
+  AddToStatus "Loading the Data Director license - Before Get-AzStorageBlobContent"
   Get-AzStorageBlobContent @DownloadDDLicenseFileHT -Force
+  AddToStatus "Loading the Data Director license - Before Copy-Item"
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
 {
+  AddToStatus "Loading the Data Director license - Ups 1"
   AddToStatus "Data Director license file not found. Using test license."
 }
 catch
 {
+  AddToStatus "Loading the Data Director license - Ups 2"
   AddToStatus $Error[0].Exception
 }
 
