@@ -32,6 +32,8 @@ function Add-NativeMethods()
 "@
 }
 
+. (Join-Path $PSScriptRoot "Version.ps1")
+
 AddToStatus "SetupStart, User: $env:USERNAME"
 
 . (Join-Path $PSScriptRoot "settings.ps1")
