@@ -252,7 +252,7 @@
                 "name": "[variables('storageAccountType')]"
             },
             "kind": "StorageV2",
-            "location": "southeastasia",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "supportsHttpsTrafficOnly": true
             }
@@ -261,7 +261,7 @@
             "apiVersion": "2018-10-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('server1Name')]",
-            "location": "southeastasia",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
             ],
