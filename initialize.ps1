@@ -68,7 +68,7 @@ function TurnOnPowershellTranscript() {
     New-ItemProperty @registryPath -Name 'OutputDirectory' -PropertyType 'String' -Value 'C:\Transcripts'
 }
 
-TurnOnPowershellTranscript()
+TurnOnPowershellTranscript
 
 if ($publicDnsName -eq "") {
     $publicDnsName = $hostname
