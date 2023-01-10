@@ -1,7 +1,7 @@
 # usage initialize.ps1
 param
 (
-       [string] $templateLink              = "https://raw.githubusercontent.com/ricardopaiva/nav-arm-templates/master/navdeveloperpreview.json",
+       [string] $templateLink              = "https://raw.githubusercontent.com/lsretail/azure-hybrid-cloud-server-setup/master/Environments/getbc/azuredeploy.json",
        [string] $containerName             = "navserver",
        [string] $hostName                  = "",
        [string] $vmAdminUsername           = "vmadmin",
