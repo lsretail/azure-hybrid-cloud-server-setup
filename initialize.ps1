@@ -52,6 +52,24 @@ function Download-File([string]$sourceUrl, [string]$destinationFile)
     (New-Object System.Net.WebClient).DownloadFile($sourceUrl, $destinationFile)
 }
 
+function TurnOnPowershellTranscript() {
+    $registryPath = @{
+        Path = 'HKLM:\Software\Policies\Microsoft\Windows\PowerShell\Transcription'
+        Force = $True
+    }
+    New-Item @registryPath
+    
+    $dwordOne = @{
+        PropertyType = 'DWord'
+        Value = 1
+    }
+    New-ItemProperty @registryPath -Name 'EnableTranscripting' @dwordOne
+    New-ItemProperty @registryPath -Name 'EnableInvocationHeader' @dwordOne
+    New-ItemProperty @registryPath -Name 'OutputDirectory' -PropertyType 'String' -Value 'C:\Transcripts'
+}
+
+TurnOnPowershellTranscript()
+
 if ($publicDnsName -eq "") {
     $publicDnsName = $hostname
 }
