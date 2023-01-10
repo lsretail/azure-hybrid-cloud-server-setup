@@ -203,7 +203,7 @@ Add-LocalGroupMember -Group administrators -Member $hostUsername -ErrorAction Ig
 ' | Set-Content "c:\myfolder\SetupWindowsUsers.ps1"
 }
 
-Download-File -sourceUrl "$($scriptPath)Version.ps1"           -destinationFile $versionScript
+# Download-File -sourceUrl "$($scriptPath)Version.ps1"           -destinationFile $versionScript
 Download-File -sourceUrl "$($scriptPath)SetupVm.ps1"           -destinationFile $setupVmScript
 Download-File -sourceUrl "$($scriptPath)SetupStart.ps1"        -destinationFile $setupStartScript
 Download-File -sourceUrl "$($scriptPath)SetupPrerequirements.ps1" -destinationFile $setupPrerequirements
