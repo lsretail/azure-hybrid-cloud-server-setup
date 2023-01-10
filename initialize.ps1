@@ -52,24 +52,6 @@ function Download-File([string]$sourceUrl, [string]$destinationFile)
     (New-Object System.Net.WebClient).DownloadFile($sourceUrl, $destinationFile)
 }
 
-function TurnOnPowershellTranscript() {
-    $registryPath = @{
-        Path = 'HKLM:\Software\Policies\Microsoft\Windows\PowerShell\Transcription'
-        Force = $True
-    }
-    New-Item @registryPath
-    
-    $dwordOne = @{
-        PropertyType = 'DWord'
-        Value = 1
-    }
-    New-ItemProperty @registryPath -Name 'EnableTranscripting' @dwordOne
-    New-ItemProperty @registryPath -Name 'EnableInvocationHeader' @dwordOne
-    New-ItemProperty @registryPath -Name 'OutputDirectory' -PropertyType 'String' -Value 'C:\Transcripts'
-}
-
-TurnOnPowershellTranscript
-
 if ($publicDnsName -eq "") {
     $publicDnsName = $hostname
 }
@@ -198,7 +180,7 @@ if ($WindowsInstallationType -eq "Server") {
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}" -Name "IsInstalled" -Value 0 -ErrorAction SilentlyContinue | Out-Null
 }
 
-$versionScript = "c:\demo\GetVersion.ps1"
+# $versionScript = "c:\demo\Version.ps1"
 $setupStartScript = "c:\demo\SetupStart.ps1"
 $setupVmScript = "c:\demo\SetupVm.ps1"
 $setupPrerequirements = "c:\demo\SetupPrerequirements.ps1"
@@ -220,7 +202,7 @@ Add-LocalGroupMember -Group administrators -Member $hostUsername -ErrorAction Ig
 ' | Set-Content "c:\myfolder\SetupWindowsUsers.ps1"
 }
 
-Download-File -sourceUrl "$($scriptPath)GetVersion.ps1"           -destinationFile $versionScript
+# Download-File -sourceUrl "$($scriptPath)Version.ps1"           -destinationFile $versionScript
 Download-File -sourceUrl "$($scriptPath)SetupVm.ps1"           -destinationFile $setupVmScript
 Download-File -sourceUrl "$($scriptPath)SetupStart.ps1"        -destinationFile $setupStartScript
 Download-File -sourceUrl "$($scriptPath)SetupPrerequirements.ps1" -destinationFile $setupPrerequirements
