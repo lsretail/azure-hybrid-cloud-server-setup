@@ -60,10 +60,10 @@ if (-not (Get-InstalledModule SqlServer -ErrorAction SilentlyContinue)) {
 }
 
 # Check for a valid Storage Token before moving forward
-Import Az.Storage
+Import-Module Az.Storage
 try {
     $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-    Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext
+    Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext -ErrorAction Stop
 
     AddToStatus -color Green "Storage Sas Token seems to be valid."
 }
