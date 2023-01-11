@@ -41,6 +41,8 @@ Import Az.Storage
 try {
     $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
     Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext
+
+    AddToStatus -color Green "Storage Sas Token seems to be valid."
 }
 catch {
     AddToStatus -color Red "Please check your Storage Sas Token."
