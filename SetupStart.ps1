@@ -36,19 +36,6 @@ AddToStatus "SetupStart, User: $env:USERNAME"
 
 . (Join-Path $PSScriptRoot "settings.ps1")
 
-# Check for a valid Storage Token before moving forward
-Import Az.Storage
-try {
-    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-    Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext
-
-    AddToStatus -color Green "Storage Sas Token seems to be valid."
-}
-catch {
-    AddToStatus -color Red "Please check your Storage Sas Token."
-    AddToStatus $Error[0].Exception
-}
-
 $ComputerInfo = Get-ComputerInfo
 $WindowsInstallationType = $ComputerInfo.WindowsInstallationType
 
@@ -70,6 +57,19 @@ if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
 if (-not (Get-InstalledModule SqlServer -ErrorAction SilentlyContinue)) {
     AddToStatus "Installing SqlServer module"
     Install-Module SqlServer -Force
+}
+
+# Check for a valid Storage Token before moving forward
+Import Az.Storage
+try {
+    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+    Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext
+
+    AddToStatus -color Green "Storage Sas Token seems to be valid."
+}
+catch {
+    AddToStatus -color Red "Please check your Storage Sas Token."
+    AddToStatus $Error[0].Exception
 }
 
 $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
