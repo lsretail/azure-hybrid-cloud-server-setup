@@ -5,5 +5,5 @@ if (!(Test-Path function:AddToStatus)) {
     }
 }
 
-$version = Get-Content -Path .\scriptVersion.txt
+$version = Get-Content -Path "c:\demo\scriptVersion.txt"
 AddToStatus "Running script version $($version)."
