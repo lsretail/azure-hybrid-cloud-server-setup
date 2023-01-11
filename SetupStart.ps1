@@ -37,6 +37,7 @@ AddToStatus "SetupStart, User: $env:USERNAME"
 . (Join-Path $PSScriptRoot "settings.ps1")
 
 # Check for a valid Storage Token before moving forward
+Import Az.Storage
 try {
     $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
     Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext
