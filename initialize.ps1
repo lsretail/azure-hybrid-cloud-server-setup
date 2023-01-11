@@ -157,7 +157,7 @@ if ($WindowsInstallationType -eq "Server") {
 }
 
 Download-File -sourceUrl "$($scriptPath)GetVersion.ps1"           -destinationFile "c:\demo\GetVersion.ps1"
-Download-File -sourceUrl "$($scriptPath)scriptVresion.txt"           -destinationFile "c:\demo\scriptVresion.txt"
+Download-File -sourceUrl "$($scriptPath)scriptVersion.txt"           -destinationFile "c:\demo\scriptVersion.txt"
 . "c:\demo\GetVersion.ps1"
 
 Remove-Item -Path "C:\inetpub\wwwroot\iisstart.*" -Force
