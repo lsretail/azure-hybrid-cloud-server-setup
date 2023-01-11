@@ -1,7 +1,7 @@
 # usage initialize.ps1
 param
 (
-       [string] $templateLink              = "https://raw.githubusercontent.com/ricardopaiva/nav-arm-templates/master/navdeveloperpreview.json",
+       [string] $templateLink              = "https://raw.githubusercontent.com/lsretail/azure-hybrid-cloud-server-setup/master/Environments/getbc/azuredeploy.json",
        [string] $containerName             = "navserver",
        [string] $hostName                  = "",
        [string] $vmAdminUsername           = "vmadmin",
@@ -155,6 +155,10 @@ if ($WindowsInstallationType -eq "Server") {
 } else {
     Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServer,IIS-ASPNET45,WCF-HTTP-Activation,IIS-ManagementConsole,IIS-BasicAuthentication,IIS-HttpCompressionDynamic -All -NoRestart | Out-Null
 }
+
+Download-File -sourceUrl "$($scriptPath)GetVersion.ps1"           -destinationFile "c:\demo\GetVersion.ps1"
+Download-File -sourceUrl "$($scriptPath)scriptVersion.txt"           -destinationFile "c:\demo\scriptVersion.txt"
+. "c:\demo\GetVersion.ps1"
 
 Remove-Item -Path "C:\inetpub\wwwroot\iisstart.*" -Force
 Download-File -sourceUrl "$($scriptPath)Default.aspx"            -destinationFile "C:\inetpub\wwwroot\default.aspx"
