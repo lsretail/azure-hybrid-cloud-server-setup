@@ -42,12 +42,11 @@ try
 }
 catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
 {
-  AddToStatus "Loading the Data Director license - Ups 1"
-  AddToStatus "Data Director license file not found. Using test license."
+  AddToStatus -color Red "Data Director license file not found. Using test license."
 }
 catch
 {
-  AddToStatus "Loading the Data Director license - Ups 2"
+  AddToStatus -color Red  "Error loading the Data Director license."
   AddToStatus $Error[0].Exception
 }
 
