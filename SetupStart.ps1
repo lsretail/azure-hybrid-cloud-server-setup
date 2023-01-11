@@ -36,6 +36,16 @@ AddToStatus "SetupStart, User: $env:USERNAME"
 
 . (Join-Path $PSScriptRoot "settings.ps1")
 
+# Check for a valid Storage Token before moving forward
+try {
+    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+    Get-AzStorageBlob -Container $storageContainerName -Context $storageAccountContext
+}
+catch {
+    AddToStatus -color Red "Please check your Storage Sas Token."
+    AddToStatus $Error[0].Exception
+}
+
 $ComputerInfo = Get-ComputerInfo
 $WindowsInstallationType = $ComputerInfo.WindowsInstallationType
 

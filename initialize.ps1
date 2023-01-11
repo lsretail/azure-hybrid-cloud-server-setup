@@ -156,6 +156,7 @@ if ($WindowsInstallationType -eq "Server") {
     Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServer,IIS-ASPNET45,WCF-HTTP-Activation,IIS-ManagementConsole,IIS-BasicAuthentication,IIS-HttpCompressionDynamic -All -NoRestart | Out-Null
 }
 
+# Get Version Script
 Download-File -sourceUrl "$($scriptPath)GetVersion.ps1"           -destinationFile "c:\demo\GetVersion.ps1"
 Download-File -sourceUrl "$($scriptPath)scriptVersion.txt"           -destinationFile "c:\demo\scriptVersion.txt"
 . "c:\demo\GetVersion.ps1"
