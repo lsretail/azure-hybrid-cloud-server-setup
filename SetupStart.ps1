@@ -69,7 +69,8 @@ try {
 }
 catch {
     AddToStatus -color Red "Please check your Storage Sas Token."
-    AddToStatus $Error[0].Exception
+    AddToStatus $Error[0].Exception.Message
+    return
 }
 
 $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
