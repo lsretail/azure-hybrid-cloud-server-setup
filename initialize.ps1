@@ -25,7 +25,7 @@ param
        [string] $StorageAccountName        = "",
        [string] $StorageContainerName      = "",
        [string] $StorageSasToken           = "",
-       [boolean] $enableTranscription      = $true
+       [string] $enableTranscription       = "Yes"
 )
 
 $verbosePreference = "SilentlyContinue"
@@ -53,9 +53,6 @@ function Download-File([string]$sourceUrl, [string]$destinationFile)
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     (New-Object System.Net.WebClient).DownloadFile($sourceUrl, $destinationFile)
 }
-
-Download-File -sourceUrl "$($scriptPath)Helpers.ps1" -destinationFile "c:\demo\Helpers.ps1"
-. "c:\demo\Helpers.ps1"
 
 if ($publicDnsName -eq "") {
     $publicDnsName = $hostname
@@ -139,6 +136,9 @@ AddToStatus "Running $WindowsProductName"
 AddToStatus "Initialize, user: $env:USERNAME"
 AddToStatus "TemplateLink: $templateLink"
 $scriptPath = $templateLink.SubString(0,$templateLink.LastIndexOf('/')+1)
+
+Download-File -sourceUrl "$($scriptPath)Helpers.ps1" -destinationFile "c:\demo\Helpers.ps1"
+. "c:\demo\Helpers.ps1"
 
 if ($enableTranscription) {
     Enable-Transcription
