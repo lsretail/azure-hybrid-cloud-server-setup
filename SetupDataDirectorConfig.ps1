@@ -9,10 +9,14 @@ if (!(Test-Path function:AddToStatus)) {
 
 AddToStatus "Loading the Data Director license"
 
+AddToStatus "Will import Az.Storage module"
 Import-Module Az.Storage
+AddToStatus "Did import Az.Storage module"
 
 $licenseFileName = 'license.lic'
+AddToStatus "Will create AzStorageContext"
 $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+AddToStatus "Did create AzStorageContext"
 
 $ListDDLicenseFileHT = @{
   Blob        = $licenseFileName
