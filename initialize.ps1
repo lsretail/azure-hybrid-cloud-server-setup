@@ -32,7 +32,8 @@ $verbosePreference = "SilentlyContinue"
 $warningPreference = 'Continue'
 $errorActionPreference = 'Stop'
 
-Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
+Download-File -sourceUrl "$($scriptPath)Helpers.ps1" -destinationFile "c:\demo\Helpers.ps1"
+. "c:\demo\Helpers.ps1"
 
 function Get-VariableDeclaration([string]$name) {
     $var = Get-Variable -Name $name
