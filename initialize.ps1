@@ -32,9 +32,6 @@ $verbosePreference = "SilentlyContinue"
 $warningPreference = 'Continue'
 $errorActionPreference = 'Stop'
 
-Download-File -sourceUrl "$($scriptPath)Helpers.ps1" -destinationFile "c:\demo\Helpers.ps1"
-. "c:\demo\Helpers.ps1"
-
 function Get-VariableDeclaration([string]$name) {
     $var = Get-Variable -Name $name
     if ($var) {
@@ -44,6 +41,11 @@ function Get-VariableDeclaration([string]$name) {
     }
 }
 
+function AddToStatus([string]$line, [string]$color = "Gray") {
+    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
+    Write-Host -ForegroundColor $color $line 
+}
+
 function Download-File([string]$sourceUrl, [string]$destinationFile)
 {
     AddToStatus "Downloading $destinationFile"
@@ -51,6 +53,9 @@ function Download-File([string]$sourceUrl, [string]$destinationFile)
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     (New-Object System.Net.WebClient).DownloadFile($sourceUrl, $destinationFile)
 }
+
+Download-File -sourceUrl "$($scriptPath)Helpers.ps1" -destinationFile "c:\demo\Helpers.ps1"
+. "c:\demo\Helpers.ps1"
 
 if ($publicDnsName -eq "") {
     $publicDnsName = $hostname
