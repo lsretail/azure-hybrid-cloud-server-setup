@@ -1,12 +1,3 @@
-if (!(Test-Path function:AddToStatus)) {
-    function AddToStatus([string]$line, [string]$color = "Gray") {
-        ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
-        Write-Host -ForegroundColor $color $line 
-    }
-}
-
-. (Join-Path $PSScriptRoot "settings.ps1")
-
 AddToStatus "Loading the Data Director license"
 
 AddToStatus "Will import Az.Storage module"
@@ -16,7 +7,14 @@ AddToStatus "Did import Az.Storage module"
 
 $licenseFileName = 'license.lic'
 AddToStatus "Will create AzStorageContext"
-$storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+try {
+  $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+}
+catch
+{
+  AddToStatus -color Red  "Error creating Azure Storage Context."
+  AddToStatus $Error[0].Exception
+}
 AddToStatus "Did create AzStorageContext"
 
 $ListDDLicenseFileHT = @{
