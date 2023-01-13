@@ -46,9 +46,9 @@ if (-not (Get-InstalledModule Az.Storage -ErrorAction SilentlyContinue)) {
     Install-Module Az.Storage -Force
 }
 
-if (-not (Get-InstalledModule Az.Account -ErrorAction SilentlyContinue)) {
-    AddToStatus "Installing Az.Account module"
-    Install-Module Az.Account -Force
+if (-not (Get-InstalledModule Az.Accounts -ErrorAction SilentlyContinue)) {
+    AddToStatus "Installing Az.Accounts module"
+    Install-Module Az.Accounts -Force
 }
 
 if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
