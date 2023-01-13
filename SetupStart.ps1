@@ -1,6 +1,4 @@
-﻿function AddToStatus([string]$line, [string]$color = "Gray") {
-    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
-}
+﻿Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
 
 function Download-File([string]$sourceUrl, [string]$destinationFile)
 {
@@ -32,9 +30,13 @@ function Add-NativeMethods()
 "@
 }
 
-AddToStatus "SetupStart, User: $env:USERNAME"
-
 . (Join-Path $PSScriptRoot "settings.ps1")
+
+if ($enableTranscription) {
+    Enable-Transcription
+}
+
+AddToStatus "SetupStart, User: $env:USERNAME"
 
 $ComputerInfo = Get-ComputerInfo
 $WindowsInstallationType = $ComputerInfo.WindowsInstallationType
@@ -91,6 +93,10 @@ if ($WindowsInstallationType -eq "Server") {
                            -Password $plainPassword | Out-Null
     
     Start-ScheduledTask -TaskName SetupVm
+
+    if ($enableTranscription) {
+        Disable-Transcription
+    }    
 }
 else {
     
