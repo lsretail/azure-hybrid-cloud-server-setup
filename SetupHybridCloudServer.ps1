@@ -103,7 +103,7 @@ if ($licenseFileUri) {
     Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 else {
-    Import-Module Az.Storage
+    Import-Module Az.Storage -Force
 
     $licenseFileName = 'DEV.flf'
     $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken

@@ -10,7 +10,7 @@ if (!(Test-Path function:AddToStatus)) {
 AddToStatus "Loading the Data Director license"
 
 AddToStatus "Will import Az.Storage module"
-Import-Module Az.Storage
+Import-Module Az.Storage -Force
 AddToStatus "Did import Az.Storage module"
 
 $licenseFileName = 'license.lic'
