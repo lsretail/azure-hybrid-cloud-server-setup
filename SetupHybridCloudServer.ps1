@@ -2,6 +2,26 @@ $Folder = "C:\DOWNLOAD\HybridCloudServerComponents"
 $Filename = "$Folder\ls-central-latest.exe"
 New-Item $Folder -itemtype directory -ErrorAction ignore | Out-Null
 
+AddToStatus -color Red "TESTING PURPOSE - START"
+AddToStatus "Will import Az.Storage module"
+# AddToStatus "Az.Storage import module skipped"
+Import-Module Az.Storage -Force
+AddToStatus "Did import Az.Storage module"
+
+AddToStatus "Will create AzStorageContext"
+try {
+  AddToStatus "Current AzStorageContext: $storageAccountContext"
+  $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+  AddToStatus "New AzStorageContext: $storageAccountContext"
+}
+catch
+{
+  AddToStatus -color Red  "Error creating Azure Storage Context."
+  AddToStatus $Error[0].Exception
+}
+AddToStatus "Did create AzStorageContext"
+AddToStatus -color Red "TESTING PURPOSE  - END"
+
 if (!(Test-Path $Filename)) {
     AddToStatus "Downloading Update Service Client Installer Script"
     $WebClient = New-Object System.Net.WebClient

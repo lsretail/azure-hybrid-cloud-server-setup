@@ -6,7 +6,7 @@ AddToStatus "Loading the Data Director license"
 
 AddToStatus "Will import Az.Storage module"
 AddToStatus "Az.Storage import module skipped"
-# Import-Module Az.Storage -Force
+Import-Module Az.Storage -Force
 AddToStatus "Did import Az.Storage module"
 
 $licenseFileName = 'license.lic'
