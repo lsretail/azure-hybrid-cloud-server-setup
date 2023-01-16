@@ -12,6 +12,8 @@ AddToStatus "Did import Az.Storage module"
 $licenseFileName = 'license.lic'
 AddToStatus "Will create AzStorageContext"
 try {
+  AddToStatus "StorageAccountName: $StorageAccountName"
+  AddToStatus "StorageSasToken: $StorageSasToken"
   AddToStatus "Current AzStorageContext: $storageAccountContext"
   $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
 }

@@ -10,6 +10,8 @@ AddToStatus "Did import Az.Storage module"
 
 AddToStatus "Will create AzStorageContext"
 try {
+  AddToStatus "StorageAccountName: $StorageAccountName"
+  AddToStatus "StorageSasToken: $StorageSasToken"  
   AddToStatus "Current AzStorageContext: $storageAccountContext"
   $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
   AddToStatus "New AzStorageContext: $storageAccountContext"
