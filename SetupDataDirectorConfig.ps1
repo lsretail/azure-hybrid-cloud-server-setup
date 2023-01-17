@@ -4,25 +4,26 @@ if ($enableTranscription) {
 
 AddToStatus "Loading the Data Director license"
 
+AddToStatus -color Red "Current File: SetupDataDirectorConfig.ps1"
 AddToStatus "Will import Az.Storage module"
 AddToStatus "Az.Storage import module skipped"
-Import-Module Az.Storage -Force
+# Import-Module Az.Storage -Force
 AddToStatus "Did import Az.Storage module"
 
 $licenseFileName = 'license.lic'
-AddToStatus "Will create AzStorageContext"
+# AddToStatus "Will create AzStorageContext"
 try {
   AddToStatus "StorageAccountName: $StorageAccountName"
   AddToStatus "StorageSasToken: $StorageSasToken"
   AddToStatus "Current AzStorageContext: $storageAccountContext"
-  $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+  # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
 }
 catch
 {
   AddToStatus -color Red  "Error creating Azure Storage Context."
   AddToStatus $Error[0].Exception
 }
-AddToStatus "Did create AzStorageContext"
+# AddToStatus "Did create AzStorageContext"
 
 $ListDDLicenseFileHT = @{
   Blob        = $licenseFileName
