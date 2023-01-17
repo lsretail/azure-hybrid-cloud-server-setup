@@ -34,6 +34,17 @@ $ListDDLicenseFileHT = @{
 try
 {   
   AddToStatus "Loading the Data Director license - Before Get-AzStorageBlob"
+  AddToStatus "Just to test some log overflow - 1"
+  AddToStatus "Just to test some log overflow - 2"
+  AddToStatus "Just to test some log overflow - 3"
+  AddToStatus "Just to test some log overflow - 4"
+  AddToStatus "Just to test some log overflow - 5"
+  AddToStatus "Just to test some log overflow - 6"
+  AddToStatus "Just to test some log overflow - 7"
+  AddToStatus "Just to test some log overflow - 8"
+  AddToStatus "Just to test some log overflow - 9"
+  AddToStatus "Just to test some log overflow - 10"
+    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
   Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
   AddToStatus "Loading the Data Director license - After Get-AzStorageBlob"
 
