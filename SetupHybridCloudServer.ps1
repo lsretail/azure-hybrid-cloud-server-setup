@@ -1,3 +1,5 @@
+AddToStatus -color Red "Current File: SetupHybridCloudServer.ps1"
+
 $Folder = "C:\DOWNLOAD\HybridCloudServerComponents"
 $Filename = "$Folder\ls-central-latest.exe"
 New-Item $Folder -itemtype directory -ErrorAction ignore | Out-Null

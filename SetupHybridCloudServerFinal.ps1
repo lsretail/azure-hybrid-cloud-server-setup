@@ -1,5 +1,7 @@
 Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
 
+AddToStatus -color Red "Current File: SetupHybridCloudServerFinal.ps1"
+
 . (Join-Path $PSScriptRoot "settings.ps1")
 
 if ($enableTranscription) {
