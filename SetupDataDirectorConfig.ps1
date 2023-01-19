@@ -44,7 +44,7 @@ try
   AddToStatus "Just to test some log overflow - 8"
   AddToStatus "Just to test some log overflow - 9"
   AddToStatus "Just to test some log overflow - 10"
-    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken -ErrorAction Stop    
+  # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken -ErrorAction Stop
   AddToStatus "Just to test some log overflow - 11"
   AddToStatus "Current AzStorageContext: $storageAccountContext"
   Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop

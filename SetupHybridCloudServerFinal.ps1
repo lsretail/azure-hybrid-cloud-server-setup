@@ -15,7 +15,13 @@ Set-Location $HCCProjectDirectory
 AddToStatus "Installing the POS Master"
 & .\UpdatePosMaster.ps1
 
+AddToStatus "SetupHybridCloudServerFinal.ps1 - Before setting up context: Current AzStorageContext: $storageAccountContext"
+$storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken -ErrorAction Stop
+AddToStatus "SetupHybridCloudServerFinal.ps1 - After setting up context: Current AzStorageContext: $storageAccountContext"
+
 . "c:\demo\SetupDataDirectorConfig.ps1"
+
+AddToStatus -color Red "Current File: Back to SetupHybridCloudServerFinal.ps1"
 
 if (Get-ScheduledTask -TaskName FinishHybridSetup -ErrorAction Ignore) {
     schtasks /DELETE /TN FinishHybridSetup /F | Out-Null
