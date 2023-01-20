@@ -42,14 +42,20 @@ try
   $LicenseFileSourcePath = "c:\demo\license.lic"
   $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
   
+  # $DownloadDDLicenseFileHT = @{
+  #   Blob        = $licenseFileName
+  #   Container   = $StorageContainerName
+  #   Destination = $LicenseFileSourcePath
+  #   Context     = $storageAccountContext
+  # }
   $DownloadDDLicenseFileHT = @{
-    Blob        = $licenseFileName
-    Container   = $StorageContainerName
-    Destination = $LicenseFileSourcePath
-    Context     = $storageAccountContext
+    "name"              = $licenseFileName
+    "container-name"    = $StorageContainerName
+    "file"              = $LicenseFileSourcePath
   }
-  AddToStatus "Loading the Data Director license - Before Get-AzStorageBlobContent"
-  Get-AzStorageBlobContent @DownloadDDLicenseFileHT -Force
+  
+  AddToStatus "Loading the Data Director license - Will download the DD License file"
+  $result = Start-AzCommand storage blob download --account-name $storageAccountName --sas-token $storageSasToken @DownloadDDLicenseFileHT
   AddToStatus "Loading the Data Director license - Before Copy-Item"
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
