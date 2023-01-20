@@ -12,42 +12,31 @@ AddToStatus "Did import Az.Storage module"
 
 $licenseFileName = 'license.lic'
 # AddToStatus "Will create AzStorageContext"
-try {
-  AddToStatus "StorageAccountName: $StorageAccountName"
-  AddToStatus "StorageSasToken: $StorageSasToken"
-  AddToStatus "Current AzStorageContext: $storageAccountContext"
-  # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-}
-catch
-{
-  AddToStatus -color Red  "Error creating Azure Storage Context."
-  AddToStatus $Error[0].Exception
-}
+# try {
+#   AddToStatus "StorageAccountName: $StorageAccountName"
+#   AddToStatus "StorageSasToken: $StorageSasToken"
+#   AddToStatus "Current AzStorageContext: $storageAccountContext"
+#   # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
+# }
+# catch
+# {
+#   AddToStatus -color Red  "Error creating Azure Storage Context."
+#   AddToStatus $Error[0].Exception
+# }
 # AddToStatus "Did create AzStorageContext"
 
-$ListDDLicenseFileHT = @{
-  Blob        = $licenseFileName
-  Container   = $StorageContainerName
-  Context     = $storageAccountContext
-}
+# $ListDDLicenseFileHT = @{
+#   Blob        = $licenseFileName
+#   Container   = $StorageContainerName
+#   Context     = $storageAccountContext
+# }
 
 try
 {   
-  AddToStatus "Loading the Data Director license - Before Get-AzStorageBlob"
-  AddToStatus "Just to test some log overflow - 1"
-  AddToStatus "Just to test some log overflow - 2"
-  AddToStatus "Just to test some log overflow - 3"
-  AddToStatus "Just to test some log overflow - 4"
-  AddToStatus "Just to test some log overflow - 5"
-  AddToStatus "Just to test some log overflow - 6"
-  AddToStatus "Just to test some log overflow - 7"
-  AddToStatus "Just to test some log overflow - 8"
-  AddToStatus "Just to test some log overflow - 9"
-  AddToStatus "Just to test some log overflow - 10"
-  # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken -ErrorAction Stop
-  AddToStatus "Just to test some log overflow - 11"
-  AddToStatus "Current AzStorageContext: $storageAccountContext"
-  Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
+  # AddToStatus "Loading the Data Director license - Before Get-AzStorageBlob"
+  # # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken -ErrorAction Stop
+  # AddToStatus "Current AzStorageContext: $storageAccountContext"
+  # Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
   AddToStatus "Loading the Data Director license - After Get-AzStorageBlob"
 
   $LicenseFileSourcePath = "c:\demo\license.lic"

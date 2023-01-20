@@ -10,3 +10,6 @@ choco install microsoft-edge
 
 AddToStatus "Install .net Framework 4.8"
 choco install dotnetfx
+
+AddToStatus "Install Azure CLI"
+choco install azure-cli
