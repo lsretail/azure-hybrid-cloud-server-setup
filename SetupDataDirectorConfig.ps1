@@ -2,43 +2,12 @@ if ($enableTranscription) {
     Enable-Transcription
 }
 
+AddToStatus -color Green "Current File: SetupDataDirectorConfig.ps1"
 AddToStatus "Loading the Data Director license"
 
-AddToStatus -color Red "Current File: SetupDataDirectorConfig.ps1"
-AddToStatus "Will import Az.Storage module"
-AddToStatus "Az.Storage import module skipped"
-# Import-Module Az.Storage -Force
-AddToStatus "Did import Az.Storage module"
-
 $licenseFileName = 'license.lic'
-# AddToStatus "Will create AzStorageContext"
-# try {
-#   AddToStatus "StorageAccountName: $StorageAccountName"
-#   AddToStatus "StorageSasToken: $StorageSasToken"
-#   AddToStatus "Current AzStorageContext: $storageAccountContext"
-#   # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-# }
-# catch
-# {
-#   AddToStatus -color Red  "Error creating Azure Storage Context."
-#   AddToStatus $Error[0].Exception
-# }
-# AddToStatus "Did create AzStorageContext"
-
-# $ListDDLicenseFileHT = @{
-#   Blob        = $licenseFileName
-#   Container   = $StorageContainerName
-#   Context     = $storageAccountContext
-# }
-
 try
 {   
-  # AddToStatus "Loading the Data Director license - Before Get-AzStorageBlob"
-  # # $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken -ErrorAction Stop
-  # AddToStatus "Current AzStorageContext: $storageAccountContext"
-  # Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
-  AddToStatus "Loading the Data Director license - After Get-AzStorageBlob"
-
   $LicenseFileSourcePath = "c:\demo\license.lic"
   $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
   
@@ -48,14 +17,9 @@ try
   #   Destination = $LicenseFileSourcePath
   #   Context     = $storageAccountContext
   # }
-  $DownloadDDLicenseFileHT = @{
-    "name"              = $licenseFileName
-    "container-name"    = $StorageContainerName
-    "file"              = $LicenseFileSourcePath
-  }
   
   AddToStatus "Loading the Data Director license - Will download the DD License file"
-  $result = Start-AzCommand storage blob download --account-name $storageAccountName --sas-token $storageSasToken @DownloadDDLicenseFileHT
+  $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
   AddToStatus "Loading the Data Director license - Before Copy-Item"
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }

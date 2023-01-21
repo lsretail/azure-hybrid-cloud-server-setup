@@ -25,11 +25,12 @@ if (!(Test-Path function:Start-AzCommand)) {
     function Start-AzCommand {
         $result = az $args 2>&1
         # $result = $($appReg = & {az $args | ConvertFrom-Json}) 2>&1
+        # Write-Host "LASTEXITCODE: $LASTEXITCODE "
         if(!$?) {
             AddToStatus -ForegroundColor Red $result[0]
             Write-Error -Message "az $args returned error $result" -ErrorAction Stop
         }
-        AddToStatus -ForegroundColor Color "Command run successfully: $(az $args)"
+        # AddToStatus -ForegroundColor Color "Command run successfully: $(az $args)"
         return $result
     }
 }
