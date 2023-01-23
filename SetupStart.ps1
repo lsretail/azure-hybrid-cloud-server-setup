@@ -41,16 +41,6 @@ AddToStatus "SetupStart, User: $env:USERNAME"
 $ComputerInfo = Get-ComputerInfo
 $WindowsInstallationType = $ComputerInfo.WindowsInstallationType
 
-if (-not (Get-InstalledModule Az.Storage -ErrorAction SilentlyContinue)) {
-    AddToStatus "Installing Az.Storage module"
-    Install-Module Az.Storage -Force
-}
-
-if (-not (Get-InstalledModule Az.Accounts -ErrorAction SilentlyContinue)) {
-    AddToStatus "Installing Az.Accounts module"
-    Install-Module Az.Accounts -Force
-}
-
 if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
     AddToStatus "Installing AzureAD module"
     Install-Module AzureAD -Force
@@ -59,18 +49,6 @@ if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
 if (-not (Get-InstalledModule SqlServer -ErrorAction SilentlyContinue)) {
     AddToStatus "Installing SqlServer module"
     Install-Module SqlServer -Force
-}
-
-# Check for a valid Storage Token before moving forward
-try {
-    $result = Start-AzCommand storage blob list --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
-    AddToStatus -color Green "Storage Sas Token seems to be valid."
-}
-catch
-{
-    AddToStatus -color Red "Please check your Storage Sas Token."
-    AddToStatus $Error[0].Exception.Message
-    return
 }
 
 $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
