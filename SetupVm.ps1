@@ -74,9 +74,35 @@ try {
         return
     }
 
-    . "c:\demo\SetupHybridCloudServer.ps1"
+    $setupHybridCloudServer = "c:\demo\SetupHybridCloudServer.ps1"   
 
-    # shutdown -r -t 30
+    $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
+    $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword))
+
+    $taskName = 'StartHybridCloudServerSetup'
+    $startupAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy UnRestricted -File $setupHybridCloudServer"
+    $startupTrigger = New-ScheduledTaskTrigger -AtStartup
+    $startupTrigger.Delay = "PT1M"
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable -DontStopOnIdleEnd
+    Register-ScheduledTask -TaskName $taskName `
+                        -Action $startupAction `
+                        -Trigger $startupTrigger `
+                        -Settings $settings `
+                        -RunLevel "Highest" `
+                        -User $vmAdminUsername `
+                        -Password $plainPassword | Out-Null
+
+    $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($null -ne $task)
+    {
+        AddToStatus "Created scheduled task: '$($task.ToString())'."
+    }
+    else
+    {
+        AddToStatus "Created scheduled task: FAILED."
+    }
+
+    shutdown -r -t 30
 
 } catch {
     AddToStatus -Color Red -line $_.Exception.Message
