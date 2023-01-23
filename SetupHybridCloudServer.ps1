@@ -2,6 +2,8 @@ Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
 
 AddToStatus -color Green "Current File: SetupHybridCloudServer.ps1"
 
+. (Join-Path $PSScriptRoot "settings.ps1")
+
 if (Get-ScheduledTask -TaskName StartHybridCloudServerSetup -ErrorAction Ignore) {
     schtasks /DELETE /TN StartHybridCloudServerSetup /F | Out-Null
 }
