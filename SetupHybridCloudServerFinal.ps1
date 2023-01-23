@@ -1,6 +1,6 @@
 Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
 
-AddToStatus -color Red "Current File: SetupHybridCloudServerFinal.ps1"
+AddToStatus -color Green "Current File: SetupHybridCloudServerFinal.ps1"
 
 . (Join-Path $PSScriptRoot "settings.ps1")
 
@@ -17,7 +17,7 @@ AddToStatus "Installing the POS Master"
 
 . "c:\demo\SetupDataDirectorConfig.ps1"
 
-AddToStatus -color Red "Current File: Back to SetupHybridCloudServerFinal.ps1"
+AddToStatus -color Green "Current File: Back to SetupHybridCloudServerFinal.ps1"
 
 if (Get-ScheduledTask -TaskName FinishHybridSetup -ErrorAction Ignore) {
     schtasks /DELETE /TN FinishHybridSetup /F | Out-Null

@@ -1,4 +1,4 @@
-AddToStatus -color Red "Current File: SetupHybridCloudServer.ps1"
+AddToStatus -color Green "Current File: SetupHybridCloudServer.ps1"
 
 $Folder = "C:\DOWNLOAD\HybridCloudServerComponents"
 $Filename = "$Folder\ls-central-latest.exe"
