@@ -242,4 +242,4 @@ Register-ScheduledTask -TaskName "SetupStart" `
                        -User "NT AUTHORITY\SYSTEM" | Out-Null
 
 AddToStatus "Restarting computer and start Installation tasks"
-Shutdown -r -t 60
+Shutdown -r -t 30

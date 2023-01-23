@@ -41,10 +41,6 @@ try {
         . $beforeContainerSetupScript
     }
 
-    if (Get-ScheduledTask -TaskName SetupStart -ErrorAction Ignore) {
-        schtasks /DELETE /TN SetupStart /F | Out-Null
-    }
-
     if (Get-ScheduledTask -TaskName SetupVm -ErrorAction Ignore) {
         schtasks /DELETE /TN SetupVm /F | Out-Null
     }

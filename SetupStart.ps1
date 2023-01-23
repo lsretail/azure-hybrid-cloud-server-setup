@@ -56,8 +56,8 @@ $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([Syst
 
 if ($WindowsInstallationType -eq "Server") {
 
-    if (Get-ScheduledTask -TaskName SetupVm -ErrorAction Ignore) {
-        schtasks /DELETE /TN SetupVm /F | Out-Null
+    if (Get-ScheduledTask -TaskName SetupStart -ErrorAction Ignore) {
+        schtasks /DELETE /TN SetupStart /F | Out-Null
     }
 
     AddToStatus "Launch SetupVm"
@@ -93,5 +93,5 @@ else {
                            -Password $plainPassword | Out-Null
     
     AddToStatus -color Yellow "Restarting computer. After restart, please Login to computer using RDP in order to resume the installation process. This is not needed for Windows Server."
-    shutdown -r -t 60
+    shutdown -r -t 30
 }

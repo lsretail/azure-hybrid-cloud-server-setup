@@ -8,6 +8,10 @@ if ($enableTranscription) {
     Enable-Transcription
 }
 
+if (Get-ScheduledTask -TaskName FinishHybridSetup -ErrorAction Ignore) {
+    schtasks /DELETE /TN FinishHybridSetup /F | Out-Null
+}
+
 AddToStatus "Who is running this: $(whoami)"
 AddToStatus "Finishing the Hybrid Cloud Components installation"
 Set-Location $HCCProjectDirectory
@@ -18,10 +22,6 @@ AddToStatus "Installing the POS Master"
 . "c:\demo\SetupDataDirectorConfig.ps1"
 
 AddToStatus -color Green "Current File: Back to SetupHybridCloudServerFinal.ps1"
-
-if (Get-ScheduledTask -TaskName FinishHybridSetup -ErrorAction Ignore) {
-    schtasks /DELETE /TN FinishHybridSetup /F | Out-Null
-}
 
 AddToStatus "Installation finished successfully."
 AddToStatus "The hybrid cloud setup is now finished."
