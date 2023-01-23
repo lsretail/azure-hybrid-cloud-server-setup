@@ -5,22 +5,13 @@ if ($enableTranscription) {
 AddToStatus -color Green "Current File: SetupDataDirectorConfig.ps1"
 AddToStatus "Loading the Data Director license"
 
-$licenseFileName = 'license.lic'
 try
 {   
+  $licenseFileName = 'license.lic'
   $LicenseFileSourcePath = "c:\demo\license.lic"
   $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
   
-  # $DownloadDDLicenseFileHT = @{
-  #   Blob        = $licenseFileName
-  #   Container   = $StorageContainerName
-  #   Destination = $LicenseFileSourcePath
-  #   Context     = $storageAccountContext
-  # }
-  
-  AddToStatus "Loading the Data Director license - Will download the DD License file"
   $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
-  AddToStatus "Loading the Data Director license - Before Copy-Item"
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
@@ -37,7 +28,6 @@ AddToStatus "Enabling Web Services in LS Data Director"
 $ddConfigFilename = "C:\ProgramData\LS Retail\Data Director\lsretail.config"
 $dd_config = Get-Content $ddConfigFilename
 $dd_config | % { $_.Replace("<WebSrv>false</WebSrv>", "<WebSrv>true</WebSrv>") } | Set-Content $ddConfigFilename
-
 
 $xml = [xml](get-content $ddConfigFilename)
 

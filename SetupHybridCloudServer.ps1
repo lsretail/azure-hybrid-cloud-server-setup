@@ -4,28 +4,6 @@ $Folder = "C:\DOWNLOAD\HybridCloudServerComponents"
 $Filename = "$Folder\ls-central-latest.exe"
 New-Item $Folder -itemtype directory -ErrorAction ignore | Out-Null
 
-AddToStatus -color Red "TESTING PURPOSE - START"
-AddToStatus "Will import Az.Storage module"
-# AddToStatus "Az.Storage import module skipped"
-Import-Module Az.Storage -Force
-AddToStatus "Did import Az.Storage module"
-
-AddToStatus "Will create AzStorageContext"
-try {
-  AddToStatus "StorageAccountName: $StorageAccountName"
-  AddToStatus "StorageSasToken: $StorageSasToken"  
-  AddToStatus "Current AzStorageContext: $storageAccountContext"
-  $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-  AddToStatus "New AzStorageContext: $storageAccountContext"
-}
-catch
-{
-  AddToStatus -color Red  "Error creating Azure Storage Context."
-  AddToStatus $Error[0].Exception
-}
-AddToStatus "Did create AzStorageContext"
-AddToStatus -color Red "TESTING PURPOSE  - END"
-
 if (!(Test-Path $Filename)) {
     AddToStatus "Downloading Update Service Client Installer Script"
     $WebClient = New-Object System.Net.WebClient
@@ -118,21 +96,11 @@ if ($licenseFileUri) {
     Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 else {
-    Import-Module Az.Storage -Force
-
     $licenseFileName = 'DEV.flf'
-    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-
     $LicenseFileSourcePath = "c:\demo\license.flf"
     $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
 
-    $DownloadBCLicenseFileHT = @{
-        Blob        = $licenseFileName
-        Container   = $StorageContainerName
-        Destination = $LicenseFileSourcePath
-        Context     = $storageAccountContext
-    }
-    Get-AzStorageBlobContent @DownloadBCLicenseFileHT
+    $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
     Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 
