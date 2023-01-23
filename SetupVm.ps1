@@ -62,18 +62,6 @@ try {
 
     . "c:\demo\SetupPrerequirements.ps1"
 
-    # Check for a valid Storage Token before moving forward
-    try {
-        $result = Start-AzCommand storage blob list --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
-        AddToStatus -color Green "Storage Sas Token seems to be valid."
-    }
-    catch
-    {
-        AddToStatus -color Red "Please check your Storage Sas Token."
-        AddToStatus $Error[0].Exception.Message
-        return
-    }
-
     $setupHybridCloudServer = "c:\demo\SetupHybridCloudServer.ps1"   
 
     $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
@@ -102,6 +90,7 @@ try {
         AddToStatus "Created scheduled task: FAILED."
     }
 
+    AddToStatus "Restarting the virtual machine."
     shutdown -r -t 30
 
 } catch {

@@ -1,5 +1,17 @@
 AddToStatus -color Green "Current File: SetupHybridCloudServer.ps1"
 
+# Check for a valid Storage Token before moving forward
+try {
+    $result = Start-AzCommand storage blob list --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+    AddToStatus -color Green "Storage Sas Token seems to be valid."
+}
+catch
+{
+    AddToStatus -color Red "Please check your Storage Sas Token."
+    AddToStatus $Error[0].Exception.Message
+    return
+}
+
 $Folder = "C:\DOWNLOAD\HybridCloudServerComponents"
 $Filename = "$Folder\ls-central-latest.exe"
 New-Item $Folder -itemtype directory -ErrorAction ignore | Out-Null
