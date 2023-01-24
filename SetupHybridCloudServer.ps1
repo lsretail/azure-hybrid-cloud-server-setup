@@ -116,12 +116,26 @@ if ($licenseFileUri) {
     Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 else {
-    $licenseFileName = 'DEV.flf'
-    $LicenseFileSourcePath = "c:\demo\license.flf"
-    $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
+    try
+    {   
+        $licenseFileName = 'DEV.flf'
+        $LicenseFileSourcePath = "c:\demo\license.flf"
+        $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
 
-    $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
-    Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
+        $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+        Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
+    }
+    catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
+    {
+        AddToStatus -color Red "Business Central license file not found."
+        return
+    }
+    catch
+    {
+        AddToStatus -color Red  "Error loading the Business Central license."
+        AddToStatus $Error[0].Exception
+        return
+    }
 }
 
 AddToStatus "Creating license package"
