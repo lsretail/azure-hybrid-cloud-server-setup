@@ -10,7 +10,14 @@ if (Get-ScheduledTask -TaskName StartHybridCloudServerSetup -ErrorAction Ignore)
 
 # Check for a valid Storage Token before moving forward
 try {
-    $result = Start-AzCommand storage blob list --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+    $result = az storage blob list --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+    if (0 -ne $LASTEXITCODE) {
+        AddToStatus -color Red "Please check your Storage Sas Token."
+        AddToStatus $Error[0].Exception.Message
+        AddToStatus $($result[0])
+        return
+    }
+
     AddToStatus -color Green "Storage Sas Token seems to be valid."
 }
 catch
@@ -122,13 +129,15 @@ else {
         $LicenseFileSourcePath = "c:\demo\license.flf"
         $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
 
-        $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+        $result = az storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
         Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
-    }
-    catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
-    {
-        AddToStatus -color Red "Business Central license file not found."
-        return
+    
+        if (0 -ne $LASTEXITCODE) {
+            AddToStatus -color Red  "Error loading the Business Central license."
+            AddToStatus $Error[0].Exception
+            AddToStatus $($result[0])
+            return
+        }
     }
     catch
     {

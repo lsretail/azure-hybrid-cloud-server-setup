@@ -11,8 +11,15 @@ try
   $LicenseFileSourcePath = "c:\demo\license.lic"
   $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
   
-  $result = Start-AzCommand storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+  $result = az storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
+
+  if (0 -ne $LASTEXITCODE) {
+    AddToStatus -color Red  "Error loading the Business Central license."
+    AddToStatus $Error[0].Exception
+    AddToStatus $($result[0])
+    return
+  }
 }
 catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
 {
