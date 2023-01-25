@@ -25,7 +25,7 @@ param
        [string] $StorageAccountName        = "",
        [string] $StorageContainerName      = "",
        [string] $StorageSasToken           = "",
-       [string] $enableTranscription       = "Yes"
+       [string] $enableTranscription       = "No"
 )
 
 $verbosePreference = "SilentlyContinue"

@@ -39,6 +39,13 @@
                 "Description": "Select if boot diagnostics should be enabled"
             }
         },
+        "enablePowershellTranscription": {
+            "type": "bool",
+            "defaultValue": "false",
+            "metadata": {
+                "Description": "Select if Powershell Transcription should be enabled"
+            }
+        },
         "TimezoneId": {
             "type": "string",
             "defaultValue": "GMT Standard Time",
@@ -242,7 +249,8 @@
         "HCSWebServicesUsername": "[parameters('HCSWebServicesUsername')]",
         "HCSWebServicesPassword": "[parameters('HCSWebServicesPassword')]",
         "StorageContainerName": "[parameters('StorageContainerName')]",
-        "StorageSasToken": "[parameters('StorageSasToken')]"
+        "StorageSasToken": "[parameters('StorageSasToken')]",
+        "enableTranscription": "[parameters('enablePowershellTranscription')]"
     },
     "resources": [{
             "apiVersion": "2019-04-01",
@@ -330,9 +338,9 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "[uri('https://raw.githubusercontent.com/lsretail/azure-hybrid-cloud-server-setup/develop/','initialize.ps1')]"
+                        "[uri('https://raw.githubusercontent.com/lsretail/azure-hybrid-cloud-server-setup/master/','initialize.ps1')]"
                     ],
-                    "commandToExecute": "[concat(variables('ScriptCommandToExecute'),'initialize.ps1',' -TemplateLink \"https://raw.githubusercontent.com/lsretail/azure-hybrid-cloud-server-setup/develop/\" -RemoteDesktopAccess \"',variables('RemoteDesktopAccess'),'\" -VMAdminUsername \"',variables('vmAdminUsername'),'\" -NAVAdminUsername \"',variables('navAdminUsername'),'\" -AdminPassword \"',variables('adminPassword'),'\" -licenseFileUri \"',variables('LicenseFileUri'),'\" -PublicDnsName \"',variables('PublicDnsName'),'\" -Multitenant \"',variables('Multitenant'),'\" -ClickOnce \"',variables('ClickOnce'),'\" -RunWindowsUpdate \"',variables('RunWindowsUpdate'),'\" -BCLocalization \"',variables('BCLocalization'),'\" -HCCProjectDirectory \"',variables('HCCProjectDirectory'),'\" -HCSWebServicesURL \"',variables('HCSWebServicesURL'),'\" -HCSWebServicesUsername \"',variables('HCSWebServicesUsername'),'\" -HCSWebServicesPassword \"',variables('HCSWebServicesPassword'),'\" -StorageAccountName \"',variables('storageAccountName'),'\" -StorageContainerName \"',variables('StorageContainerName'),'\" -StorageSasToken \"',variables('StorageSasToken'),'\"')]"
+                    "commandToExecute": "[concat(variables('ScriptCommandToExecute'),'initialize.ps1',' -TemplateLink \"https://raw.githubusercontent.com/lsretail/azure-hybrid-cloud-server-setup/master/\" -RemoteDesktopAccess \"',variables('RemoteDesktopAccess'),'\" -EnableTranscription \"',variables('EnableTranscription'),'\" -VMAdminUsername \"',variables('vmAdminUsername'),'\" -NAVAdminUsername \"',variables('navAdminUsername'),'\" -AdminPassword \"',variables('adminPassword'),'\" -licenseFileUri \"',variables('LicenseFileUri'),'\" -PublicDnsName \"',variables('PublicDnsName'),'\" -Multitenant \"',variables('Multitenant'),'\" -ClickOnce \"',variables('ClickOnce'),'\" -RunWindowsUpdate \"',variables('RunWindowsUpdate'),'\" -BCLocalization \"',variables('BCLocalization'),'\" -HCCProjectDirectory \"',variables('HCCProjectDirectory'),'\" -HCSWebServicesURL \"',variables('HCSWebServicesURL'),'\" -HCSWebServicesUsername \"',variables('HCSWebServicesUsername'),'\" -HCSWebServicesPassword \"',variables('HCSWebServicesPassword'),'\" -StorageAccountName \"',variables('storageAccountName'),'\" -StorageContainerName \"',variables('StorageContainerName'),'\" -StorageSasToken \"',variables('StorageSasToken'),'\"')]"
                 },
                 "protectedSettings": {}
             }
