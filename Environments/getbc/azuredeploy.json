@@ -39,7 +39,7 @@
                 "Description": "Select if boot diagnostics should be enabled"
             }
         },
-        "enablePowershellTranscription": {
+        "enableTranscription": {
             "type": "bool",
             "defaultValue": "false",
             "metadata": {
@@ -250,7 +250,7 @@
         "HCSWebServicesPassword": "[parameters('HCSWebServicesPassword')]",
         "StorageContainerName": "[parameters('StorageContainerName')]",
         "StorageSasToken": "[parameters('StorageSasToken')]",
-        "enableTranscription": "[parameters('enablePowershellTranscription')]"
+        "enableTranscription": "[parameters('enableTranscription')]"
     },
     "resources": [{
             "apiVersion": "2019-04-01",
