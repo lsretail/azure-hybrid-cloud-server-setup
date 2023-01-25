@@ -1,6 +1,4 @@
-﻿function AddToStatus([string]$line, [string]$color = "Gray") {
-    ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
-}
+﻿Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
 
 function Download-File([string]$sourceUrl, [string]$destinationFile)
 {
@@ -32,22 +30,16 @@ function Add-NativeMethods()
 "@
 }
 
-AddToStatus "SetupStart, User: $env:USERNAME"
-
 . (Join-Path $PSScriptRoot "settings.ps1")
+
+if ($enableTranscription) {
+    Enable-Transcription
+}
+
+AddToStatus "SetupStart, User: $env:USERNAME"
 
 $ComputerInfo = Get-ComputerInfo
 $WindowsInstallationType = $ComputerInfo.WindowsInstallationType
-
-if (-not (Get-InstalledModule Az.Storage -ErrorAction SilentlyContinue)) {
-    AddToStatus "Installing Az.Storage module"
-    Install-Module Az.Storage -Force
-}
-
-if (-not (Get-InstalledModule Az.Account -ErrorAction SilentlyContinue)) {
-    AddToStatus "Installing Az.Account module"
-    Install-Module Az.Account -Force
-}
 
 if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
     AddToStatus "Installing AzureAD module"
@@ -64,8 +56,8 @@ $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([Syst
 
 if ($WindowsInstallationType -eq "Server") {
 
-    if (Get-ScheduledTask -TaskName SetupVm -ErrorAction Ignore) {
-        schtasks /DELETE /TN SetupVm /F | Out-Null
+    if (Get-ScheduledTask -TaskName SetupStart -ErrorAction Ignore) {
+        schtasks /DELETE /TN SetupStart /F | Out-Null
     }
 
     AddToStatus "Launch SetupVm"
@@ -77,6 +69,10 @@ if ($WindowsInstallationType -eq "Server") {
                            -Password $plainPassword | Out-Null
     
     Start-ScheduledTask -TaskName SetupVm
+
+    if ($enableTranscription) {
+        Disable-Transcription
+    }    
 }
 else {
     
@@ -97,5 +93,5 @@ else {
                            -Password $plainPassword | Out-Null
     
     AddToStatus -color Yellow "Restarting computer. After restart, please Login to computer using RDP in order to resume the installation process. This is not needed for Windows Server."
-    shutdown -r -t 60
+    shutdown -r -t 30
 }

@@ -1,11 +1,16 @@
-if (!(Test-Path function:AddToStatus)) {
-    function AddToStatus([string]$line, [string]$color = "Gray") {
-        ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
-        Write-Host -ForegroundColor $color $line 
-    }
-}
+Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
+
+AddToStatus -color Green "Current File: SetupHybridCloudServerFinal.ps1"
 
 . (Join-Path $PSScriptRoot "settings.ps1")
+
+if ($enableTranscription) {
+    Enable-Transcription
+}
+
+if (Get-ScheduledTask -TaskName FinishHybridSetup -ErrorAction Ignore) {
+    schtasks /DELETE /TN FinishHybridSetup /F | Out-Null
+}
 
 AddToStatus "Who is running this: $(whoami)"
 AddToStatus "Finishing the Hybrid Cloud Components installation"
@@ -16,9 +21,7 @@ AddToStatus "Installing the POS Master"
 
 . "c:\demo\SetupDataDirectorConfig.ps1"
 
-if (Get-ScheduledTask -TaskName FinishHybridSetup -ErrorAction Ignore) {
-    schtasks /DELETE /TN FinishHybridSetup /F | Out-Null
-}
+AddToStatus -color Green "Current File: Back to SetupHybridCloudServerFinal.ps1"
 
 AddToStatus "Installation finished successfully."
 AddToStatus "The hybrid cloud setup is now finished."

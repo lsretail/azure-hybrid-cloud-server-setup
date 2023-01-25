@@ -1,11 +1,31 @@
-if (!(Test-Path function:AddToStatus)) {
-    function AddToStatus([string]$line, [string]$color = "Gray") {
-        ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
-        Write-Host -ForegroundColor $color $line 
-    }
-}
+Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
+
+AddToStatus -color Green "Current File: SetupHybridCloudServer.ps1"
 
 . (Join-Path $PSScriptRoot "settings.ps1")
+
+if (Get-ScheduledTask -TaskName StartHybridCloudServerSetup -ErrorAction Ignore) {
+    schtasks /DELETE /TN StartHybridCloudServerSetup /F | Out-Null
+}
+
+# Check for a valid Storage Token before moving forward
+try {
+    $result = az storage blob list --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+    if (0 -ne $LASTEXITCODE) {
+        AddToStatus -color Red "Please check your Storage Sas Token."
+        AddToStatus $Error[0].Exception.Message
+        AddToStatus $($result[0])
+        return
+    }
+
+    AddToStatus -color Green "Storage Sas Token seems to be valid."
+}
+catch
+{
+    AddToStatus -color Red "Please check your Storage Sas Token."
+    AddToStatus $Error[0].Exception.Message
+    return
+}
 
 $Folder = "C:\DOWNLOAD\HybridCloudServerComponents"
 $Filename = "$Folder\ls-central-latest.exe"
@@ -103,22 +123,28 @@ if ($licenseFileUri) {
     Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 }
 else {
-    Import-Module Az.Storage
+    try
+    {   
+        $licenseFileName = 'DEV.flf'
+        $LicenseFileSourcePath = "c:\demo\license.flf"
+        $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
 
-    $licenseFileName = 'DEV.flf'
-    $storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-
-    $LicenseFileSourcePath = "c:\demo\license.flf"
-    $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
-
-    $DownloadBCLicenseFileHT = @{
-        Blob        = $licenseFileName
-        Container   = $StorageContainerName
-        Destination = $LicenseFileSourcePath
-        Context     = $storageAccountContext
+        $result = az storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+        Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
+    
+        if (0 -ne $LASTEXITCODE) {
+            AddToStatus -color Red  "Error loading the Business Central license."
+            AddToStatus $Error[0].Exception
+            AddToStatus $($result[0])
+            return
+        }
     }
-    Get-AzStorageBlobContent @DownloadBCLicenseFileHT
-    Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
+    catch
+    {
+        AddToStatus -color Red  "Error loading the Business Central license."
+        AddToStatus $Error[0].Exception
+        return
+    }
 }
 
 AddToStatus "Creating license package"

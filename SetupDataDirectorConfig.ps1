@@ -1,44 +1,25 @@
-if (!(Test-Path function:AddToStatus)) {
-    function AddToStatus([string]$line, [string]$color = "Gray") {
-        ("<font color=""$color"">" + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortDatePattern) + " " + [DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.ShortTimePattern.replace(":mm",":mm:ss")) + " $line</font>") | Add-Content -Path "c:\demo\status.txt" -Force -ErrorAction SilentlyContinue
-        Write-Host -ForegroundColor $color $line 
-    }
+if ($enableTranscription) {
+    Enable-Transcription
 }
 
-. (Join-Path $PSScriptRoot "settings.ps1")
-
+AddToStatus -color Green "Current File: SetupDataDirectorConfig.ps1"
 AddToStatus "Loading the Data Director license"
-
-Import-Module Az.Storage
-
-$licenseFileName = 'license.lic'
-$storageAccountContext = New-AzStorageContext $StorageAccountName -SasToken $StorageSasToken
-
-$ListDDLicenseFileHT = @{
-  Blob        = $licenseFileName
-  Container   = $StorageContainerName
-  Context     = $storageAccountContext
-}
 
 try
 {   
-  AddToStatus "Loading the Data Director license - Before Get-AzStorageBlob"
-  Get-AzStorageBlob @ListDDLicenseFileHT -ErrorAction Stop
-  AddToStatus "Loading the Data Director license - After Get-AzStorageBlob"
-
+  $licenseFileName = 'license.lic'
   $LicenseFileSourcePath = "c:\demo\license.lic"
   $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
   
-  $DownloadDDLicenseFileHT = @{
-    Blob        = $licenseFileName
-    Container   = $StorageContainerName
-    Destination = $LicenseFileSourcePath
-    Context     = $storageAccountContext
-  }
-  AddToStatus "Loading the Data Director license - Before Get-AzStorageBlobContent"
-  Get-AzStorageBlobContent @DownloadDDLicenseFileHT -Force
-  AddToStatus "Loading the Data Director license - Before Copy-Item"
+  $result = az storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
+
+  if (0 -ne $LASTEXITCODE) {
+    AddToStatus -color Red  "Error loading the Business Central license."
+    AddToStatus $Error[0].Exception
+    AddToStatus $($result[0])
+    return
+  }
 }
 catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
 {
@@ -54,7 +35,6 @@ AddToStatus "Enabling Web Services in LS Data Director"
 $ddConfigFilename = "C:\ProgramData\LS Retail\Data Director\lsretail.config"
 $dd_config = Get-Content $ddConfigFilename
 $dd_config | % { $_.Replace("<WebSrv>false</WebSrv>", "<WebSrv>true</WebSrv>") } | Set-Content $ddConfigFilename
-
 
 $xml = [xml](get-content $ddConfigFilename)
 
