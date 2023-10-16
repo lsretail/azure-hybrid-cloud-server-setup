@@ -34,33 +34,44 @@ New-Item $Folder -itemtype directory -ErrorAction ignore | Out-Null
 if (!(Test-Path $Filename)) {
     AddToStatus "Downloading Update Service Client Installer Script"
     $WebClient = New-Object System.Net.WebClient
-    $WebClient.DownloadFile("https://portal.lsretail.com/media/uiucpd5g/ls-central-latest.exe", $Filename)
+    $WebClient.DownloadFile("https://updateservice.lsretail.com/api/v1/installers/6c1d515b-9b40-4074-ae40-b921f0b2a67d/download", $Filename)
 }
 
 AddToStatus "Installing Update Service Client module"
-. "$Filename" /VERYSILENT /NORESTART /SUPPRESSMSGBOXES | Out-Null
+. "$Filename" -silent | Out-Null
 if ($LASTEXITCODE -ne 0) { 
     AddToStatus -color red "Error installing Update Service Client module: $($LASTEXITCODE)"
     return
 }
 
 $env:PSModulePath = [System.Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
-AddToStatus "Will install go-current-client"
-Start-Sleep -Seconds 5
+Import-Module UpdateService
 
-try { 
-    Install-GocPackage -Id 'go-current-client'
-}
-catch {
-    AddToStatus "Error installing go-current-client: $($LASTEXITCODE). Retrying..."
-    Install-GocPackage -Id 'go-current-client'
-}
+AddToStatus "Will install go-current-client package"
+$totalRetries = 0
+do {
+    $Failed = $false
+    try {
+        Install-GocPackage -Id 'go-current-client'
+    } catch { 
+        $totalRetries += 1
+        AddToStatus -color red "Error installing go-current-client: $($LASTEXITCODE). Retrying..."
+        AddToStatus -color red "Error installing go-current-client - Total Retries: $($totalRetries)."
 
-AddToStatus "Did install go-current-client"
+        AddToStatus -color red "Error installing go-current-client: $($_)."
+        AddToStatus -color red "Error installing go-current-client - Exception: $($_.Exception)."
+        AddToStatus -color red "Error installing go-current-client - ScriptStackTrace: $($_.ScriptStackTrace)."
+        AddToStatus -color red "Error installing go-current-client - ErrorDetails: $($_.ErrorDetails)."
+        Start-Sleep -Seconds 1 # wait for a seconds before next attempt.
+        $Failed = $true
+    }
+} while (($Failed) -and ($totalRetries -lt 3))
+
+AddToStatus "Did install go-current-client package"
 $env:PSModulePath = [System.Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
 
 AddToStatus "Installing SQL Server Express (this might take a while)"
-Install-GocPackage -Id 'sql-server-express'
+Install-UscPackage -Id 'sql-server-express'
 
 AddToStatus "Configuring the SQL Server authentication mode to mixed mode"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQLServer" -Name "LoginMode" -Value 2 | Out-Null
@@ -70,17 +81,14 @@ AddToStatus "Preparing SQL Server Studio Management (SSMS) installation (this mi
 . "c:\demo\SetupSSMS.ps1"
 
 AddToStatus "Installing LS Data Director Service"
-Install-GocPackage -Id 'ls-dd-service'
+Install-UscPackage -Id 'ls-dd-service'
 
 AddToStatus "Installing Update Service Server"
-Install-GocPackage -Id 'go-current-server'
-
-AddToStatus "Installing Update Service Server Management"
-Install-GocPackage -Id 'go-current-server-management'
+Install-UscPackage -Id 'ls-update-service-server'
 
 $env:PSModulePath = [System.Environment]::GetEnvironmentVariable("PSModulePath", "Machine")
 
-Import-Module GoCurrent
+Import-Module UpdateService
 Import-Module GoCurrentServer
 
 $ServerAssembly = [System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.FullName.StartsWith('LSRetail.GoCurrent.Server.Management')}
@@ -104,7 +112,7 @@ $Arguments = @{
         WsPassword = $HCSWebServicesPassword
     }
 }
-Install-GocPackage -Id 'ls-central-hcc-project' -Arguments $Arguments
+Install-UscPackage -Id 'ls-central-hcc-project' -Arguments $Arguments
 
 $ProjectJson = Get-Content -Path (Join-Path $HCCProjectDirectory 'Project.json') | ConvertFrom-Json
 $ProjectJson.WsPassword = $HCSWebServicesPassword
@@ -117,7 +125,7 @@ $env:PSModulePath = [System.Environment]::GetEnvironmentVariable("PSModulePath",
 
 AddToStatus "Downloading the Business Central license"
 if ($licenseFileUri) {
-    $LicenseFileSourcePath = "c:\demo\license.flf"
+    $LicenseFileSourcePath = "c:\demo\license.bclicense"
     $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
     Download-File -sourceUrl $licensefileuri -destinationFile $LicenseFileSourcePath
     Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
@@ -125,8 +133,8 @@ if ($licenseFileUri) {
 else {
     try
     {   
-        $licenseFileName = 'DEV.flf'
-        $LicenseFileSourcePath = "c:\demo\license.flf"
+        $licenseFileName = 'DEV.bclicense'
+        $LicenseFileSourcePath = "c:\demo\license.bclicense"
         $LicenseFileDestinationPath = (Join-Path $HCCProjectDirectory 'Files/License')
 
         $result = az storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
@@ -152,7 +160,7 @@ AddToStatus "Creating license package"
 
 AddToStatus "Downloading necessary package to the Update Service Server (this might take a while as the packages are downloaded from LS Retail's Update Service server)"
 & .\GetLsCentralPackages.ps1
-AddToStatus "Packages downloaded. You can view all packages on the server: http://localhost:8030"
+AddToStatus "Packages downloaded. You can view all packages on the server: http://localhost:8060"
 
 AddToStatus "Updating NewBundlePackage script to include the license package"
 $bundlePackage = Get-Content -Path (Join-Path $HCCProjectDirectory 'NewBundlePackage.ps1')
