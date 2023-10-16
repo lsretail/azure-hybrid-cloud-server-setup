@@ -46,10 +46,18 @@ if (-not (Get-InstalledModule AzureAD -ErrorAction SilentlyContinue)) {
     Install-Module AzureAD -Force
 }
 
-if (-not (Get-InstalledModule SqlServer -ErrorAction SilentlyContinue)) {
+# if (-not (Get-InstalledModule SqlServer -ErrorAction SilentlyContinue)) {
     AddToStatus "Installing SqlServer module"
-    Install-Module SqlServer -Force
-}
+    # Installing this specific version because of the following error when running the UpdatePOSMaster.ps1 script.
+    # https://github.com/microsoft/SQLServerPSModule/issues/45
+    #
+    # Method not found: 'Void 
+	# Microsoft.Data.SqlClient.AlwaysEncrypted.AzureKeyVaultProvider.SqlColumnEncryptionAzureKeyVaultProvider..ctor(Azure.Core.TokenCredential)'.
+    #
+    # This is due to some incompatibility with SqlServer and Az modules.
+    Uninstall-Module -Name SqlServer -AllVersion  -Force
+    Install-Module -Name SqlServer -RequiredVersion 21.1.18256 -AllowClobber -Force
+# }
 
 $securePassword = ConvertTo-SecureString -String $adminPassword -Key $passwordKey
 $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword))
