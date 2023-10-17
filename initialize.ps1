@@ -241,5 +241,19 @@ Register-ScheduledTask -TaskName "SetupStart" `
                        -RunLevel "Highest" `
                        -User "NT AUTHORITY\SYSTEM" | Out-Null
 
+try {
+    $version = [System.Version](Get-ItemPropertyValue -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -Name 'Version')
+    if ($version -lt '4.8.0') {
+        AddToStatus "Installing DotNet 4.8 and restarting computer to start Installation tasks"
+        $ProgressPreference = "SilentlyContinue"
+        $dotnet48exe = Join-Path $downloadFolder "dotnet48.exe"
+        Invoke-WebRequest -UseBasicParsing -uri 'https://go.microsoft.com/fwlink/?linkid=2088631' -OutFile $dotnet48exe
+        & $dotnet48exe /q
+    }
+}
+catch {
+    AddToStatus -color Red ".NET Framework 4.7 or higher doesn't seem to be installed. Something went wrong during installation."
+}
+                    
 AddToStatus "Restarting computer and start Installation tasks"
 Shutdown -r -t 30
