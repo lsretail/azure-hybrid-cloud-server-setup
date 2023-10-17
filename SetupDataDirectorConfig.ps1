@@ -1,3 +1,5 @@
+Import-Module (Join-Path $PSScriptRoot "Helpers.ps1") -Force
+
 if ($enableTranscription) {
     Enable-Transcription
 }
@@ -5,19 +7,21 @@ if ($enableTranscription) {
 AddToStatus -color Green "Current File: SetupDataDirectorConfig.ps1"
 AddToStatus "Loading the Data Director license"
 
+Import-Module Az.Storage -Force
+
 try
 {   
   $licenseFileName = 'license.lic'
   $LicenseFileSourcePath = "c:\demo\license.lic"
   $LicenseFileDestinationPath = "C:\ProgramData\LS Retail\Data Director\license.lic"
   
-  $result = az storage blob download --file $LicenseFileSourcePath --name $licenseFileName --account-name $storageAccountName --container-name $storageContainerName --sas-token """$storageSasToken""" # --debug
+  $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -SasToken $storageSasToken
+  Get-AzStorageBlobContent -Container $storageContainerName -Blob $licenseFileName -Context $storageContext -Destination $LicenseFileSourcePath -ErrorAction Stop
   Copy-Item -Path $LicenseFileSourcePath -Destination $LicenseFileDestinationPath -Force
 
   if (0 -ne $LASTEXITCODE) {
-    AddToStatus -color Red  "Error loading the Business Central license."
-    AddToStatus $Error[0].Exception
-    AddToStatus $($result[0])
+    AddToStatus -color Red  "Error loading the Data Director license."
+    AddToStatus -ForegroundColor Red $_.Exception.Message
     return
   }
 }
@@ -25,10 +29,15 @@ catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
 {
   AddToStatus -color Red "Data Director license file not found. Using test license."
 }
+catch [Microsoft.Azure.Storage.StorageException]
+{
+    AddToStatus -color Red "Please check your Storage Sas Token."
+    AddToStatus -ForegroundColor Red $_.Exception.Message
+}
 catch
 {
   AddToStatus -color Red  "Error loading the Data Director license."
-  AddToStatus $Error[0].Exception
+  AddToStatus -ForegroundColor Red $_.Exception.Message
 }
 
 AddToStatus "Enabling Web Services in LS Data Director"
