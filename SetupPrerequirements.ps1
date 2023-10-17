@@ -18,5 +18,5 @@ choco feature enable -n allowGlobalConfirmation
 AddToStatus "Install Edge"
 choco install microsoft-edge
 
-AddToStatus "Install Azure CLI"
-choco install azure-cli
+AddToStatus "Install Az.Storage Powershell module"
+Install-Module Az.Storage -Force

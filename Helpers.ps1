@@ -20,3 +20,18 @@ if (!(Test-Path function:Disable-Transcription)) {
         Stop-Transcript
     }
 }
+
+if (!(Test-Path function:TestContainerSasToken)) {
+    function TestContainerSasToken([string]$StorageAccountName, [string]$StorageContainerName, [string]$StorageSasToken) {
+        try {
+            $storageContext = New-AzStorageContext -StorageAccountName $StorageAccountName -SasToken $StorageSasToken
+            Get-AzStorageBlob -Container $StorageContainerName -Context $StorageContext -ErrorAction Stop
+        }
+        catch
+        {
+            # AddToStatus -color Red "Please check your Storage Sas Token."
+            # AddToStatus -color Red "$_"
+            throw $_
+        }
+    }
+}
